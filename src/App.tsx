@@ -1,96 +1,104 @@
-import { useState, useEffect, useCallback } from 'react'
+import { useState, useEffect, useCallback, useRef } from 'react'
 import './App.css'
 
-const API_URL = 'http://localhost:3001/api'
-
-interface TrackInfo {
-  name: string
-  artist: string
-  album: string
-  artwork: string
-  duration: number
-  position: number
-  isPlaying: boolean
-}
-
-interface Playlist {
+interface Channel {
   id: string
-  name: string
+  title: string
+  description: string
+  dj: string
+  genre: string
+  image: string
+  largeimage: string
+  xlimage: string
+  playlists: { url: string; format: string; quality: string }[]
+  lastPlaying: string
+  listeners: number
 }
 
 function App() {
-  const [track, setTrack] = useState<TrackInfo | null>(null)
-  const [isPlaying, setIsPlaying] = useState(false)
-  const [progress, setProgress] = useState(0)
-  const [playlists, setPlaylists] = useState<Playlist[]>([])
+  const [channels, setChannels] = useState<Channel[]>([])
   const [selectedIndex, setSelectedIndex] = useState(0)
+  const [isPlaying, setIsPlaying] = useState(false)
+  const [currentTrack, setCurrentTrack] = useState('')
+  const audioRef = useRef<HTMLAudioElement | null>(null)
+  const isChangingChannel = useRef(false)
 
-  // Fetch playlists
+  // Fetch channels from SomaFM
   useEffect(() => {
-    fetch(`${API_URL}/playlists`)
+    fetch('https://api.somafm.com/channels.json')
       .then(res => res.json())
-      .then(data => setPlaylists(data))
-      .catch(err => console.error('Failed to fetch playlists:', err))
+      .then(data => {
+        setChannels(data.channels)
+      })
+      .catch(err => console.error('Failed to fetch channels:', err))
   }, [])
 
-  // Fetch current track info
-  const fetchCurrentTrack = useCallback(async () => {
-    try {
-      const res = await fetch(`${API_URL}/current`)
-      const data = await res.json()
-      setTrack(data)
-      setIsPlaying(data.isPlaying)
-      if (data.duration > 0) {
-        setProgress((data.position * 1000 / data.duration) * 100)
+  // Get stream URL (prefer highest quality mp3)
+  const getStreamUrl = useCallback((channel: Channel) => {
+    const mp3Stream = channel.playlists.find(p => p.format === 'mp3' && p.quality === 'highest')
+      || channel.playlists.find(p => p.format === 'mp3')
+      || channel.playlists[0]
+    return mp3Stream?.url.replace('.pls', '') || ''
+  }, [])
+
+  // Play channel
+  const playChannel = useCallback((index: number) => {
+    if (!channels[index] || isChangingChannel.current) return
+
+    isChangingChannel.current = true
+    setSelectedIndex(index)
+    setCurrentTrack(channels[index].lastPlaying || '')
+
+    if (audioRef.current) {
+      // Proxy through our server to avoid CORS/403 issues
+      const proxyUrl = `http://localhost:3001/api/stream/${channels[index].id}`
+      console.log('Playing:', proxyUrl)
+      audioRef.current.src = proxyUrl
+      audioRef.current.volume = 1.0
+      const playPromise = audioRef.current.play()
+      if (playPromise !== undefined) {
+        playPromise
+          .then(() => {
+            console.log('Playback started')
+            setIsPlaying(true)
+          })
+          .catch(err => {
+            console.error('Playback error:', err)
+            setIsPlaying(false)
+          })
       }
-    } catch (error) {
-      console.error('Failed to fetch track:', error)
     }
-  }, [])
 
-  // Play playlist
-  const playPlaylist = useCallback(async (index: number) => {
-    if (playlists[index]) {
-      setSelectedIndex(index)
-      await fetch(`${API_URL}/playlist/${playlists[index].id}`, { method: 'POST' })
-      setTimeout(fetchCurrentTrack, 500)
-    }
-  }, [playlists, fetchCurrentTrack])
+    setTimeout(() => { isChangingChannel.current = false }, 500)
+  }, [channels, getStreamUrl])
 
   // Control functions
-  const handlePrevious = useCallback(async () => {
-    await fetch(`${API_URL}/previous`, { method: 'POST' })
-    setTimeout(fetchCurrentTrack, 300)
-  }, [fetchCurrentTrack])
+  const handlePlayPause = useCallback(() => {
+    if (!audioRef.current) return
 
-  const handleNext = useCallback(async () => {
-    await fetch(`${API_URL}/next`, { method: 'POST' })
-    setTimeout(fetchCurrentTrack, 300)
-  }, [fetchCurrentTrack])
+    if (isPlaying) {
+      audioRef.current.pause()
+      setIsPlaying(false)
+    } else {
+      if (!audioRef.current.src && channels[selectedIndex]) {
+        playChannel(selectedIndex)
+      } else {
+        audioRef.current.play()
+        setIsPlaying(true)
+      }
+    }
+  }, [isPlaying, channels, selectedIndex, playChannel])
 
-  const handlePlayPause = useCallback(async () => {
-    await fetch(`${API_URL}/playpause`, { method: 'POST' })
-    setIsPlaying(prev => !prev)
-    setTimeout(fetchCurrentTrack, 300)
-  }, [fetchCurrentTrack])
+  // Navigate channels
+  const handleChannelPrev = useCallback(() => {
+    const newIndex = selectedIndex > 0 ? selectedIndex - 1 : channels.length - 1
+    playChannel(newIndex)
+  }, [selectedIndex, channels.length, playChannel])
 
-  // Navigate playlists
-  const handlePlaylistPrev = useCallback(() => {
-    const newIndex = selectedIndex > 0 ? selectedIndex - 1 : playlists.length - 1
-    playPlaylist(newIndex)
-  }, [selectedIndex, playlists.length, playPlaylist])
-
-  const handlePlaylistNext = useCallback(() => {
-    const newIndex = selectedIndex < playlists.length - 1 ? selectedIndex + 1 : 0
-    playPlaylist(newIndex)
-  }, [selectedIndex, playlists.length, playPlaylist])
-
-  // Initial fetch and polling
-  useEffect(() => {
-    fetchCurrentTrack()
-    const interval = setInterval(fetchCurrentTrack, 1000)
-    return () => clearInterval(interval)
-  }, [fetchCurrentTrack])
+  const handleChannelNext = useCallback(() => {
+    const newIndex = selectedIndex < channels.length - 1 ? selectedIndex + 1 : 0
+    playChannel(newIndex)
+  }, [selectedIndex, channels.length, playChannel])
 
   // Keyboard navigation
   useEffect(() => {
@@ -98,17 +106,11 @@ function App() {
       switch (e.key) {
         case 'ArrowLeft':
           e.preventDefault()
-          handlePlaylistPrev()
+          handleChannelPrev()
           break
         case 'ArrowRight':
           e.preventDefault()
-          handlePlaylistNext()
-          break
-        case 'ArrowUp':
-          handlePrevious()
-          break
-        case 'ArrowDown':
-          handleNext()
+          handleChannelNext()
           break
         case ' ':
         case 'Enter':
@@ -120,28 +122,49 @@ function App() {
 
     window.addEventListener('keydown', handleKeyDown)
     return () => window.removeEventListener('keydown', handleKeyDown)
-  }, [handlePrevious, handleNext, handlePlayPause, handlePlaylistPrev, handlePlaylistNext])
+  }, [handleChannelPrev, handleChannelNext, handlePlayPause])
 
-  const currentPlaylist = playlists[selectedIndex]
+  // Poll for current track info
+  useEffect(() => {
+    const interval = setInterval(() => {
+      if (channels[selectedIndex]) {
+        fetch('https://api.somafm.com/channels.json')
+          .then(res => res.json())
+          .then(data => {
+            const channel = data.channels.find((c: Channel) => c.id === channels[selectedIndex].id)
+            if (channel) {
+              setCurrentTrack(channel.lastPlaying || '')
+            }
+          })
+          .catch(() => {})
+      }
+    }, 10000)
+    return () => clearInterval(interval)
+  }, [channels, selectedIndex])
+
+  const currentChannel = channels[selectedIndex]
 
   return (
     <div className="tuner">
-      {/* Hero Album Art */}
+      {/* Audio element */}
+      <audio ref={audioRef} preload="none" />
+
+      {/* Hero Channel Art */}
       <div className="hero-artwork">
-        {track?.artwork && (
-          <img src={track.artwork} alt={track.name || 'Album art'} />
+        {currentChannel?.xlimage && (
+          <img src={currentChannel.xlimage} alt={currentChannel.title || 'Channel art'} />
         )}
       </div>
 
-      {/* Playlist Carousel */}
+      {/* Channel Carousel */}
       <div className="carousel">
-        {playlists.map((playlist, index) => (
+        {channels.slice(0, 16).map((channel, index) => (
           <div
-            key={playlist.id}
+            key={channel.id}
             className={`carousel-item ${index === selectedIndex ? 'selected' : ''}`}
-            onClick={() => playPlaylist(index)}
+            onClick={() => playChannel(index)}
           >
-            <span className="carousel-number">{index + 1}</span>
+            <img src={channel.largeimage} alt={channel.title} />
           </div>
         ))}
       </div>
@@ -149,17 +172,12 @@ function App() {
       {/* Bottom Controls */}
       <div className="controls">
         <div className="track-info">
-          <span className="playlist-name">{currentPlaylist?.name || 'Select Playlist'}</span>
-          <span className="song-name">{track?.name || 'No track'}</span>
-          <span className="artist">{track?.artist || 'Unknown artist'}</span>
+          <span className="playlist-name">{currentChannel?.title || 'Select Station'}</span>
+          <span className="song-name">{currentTrack || 'No track info'}</span>
+          <span className="artist">{currentChannel?.genre || ''}</span>
         </div>
 
         <div className="playback-controls">
-          <button className="control-btn" onClick={handlePrevious}>
-            <svg viewBox="0 0 24 24" fill="currentColor">
-              <path d="M6 6h2v12H6zm3.5 6l8.5 6V6z" />
-            </svg>
-          </button>
           <button className="control-btn play-btn" onClick={handlePlayPause}>
             {isPlaying ? (
               <svg viewBox="0 0 24 24" fill="currentColor">
@@ -171,17 +189,10 @@ function App() {
               </svg>
             )}
           </button>
-          <button className="control-btn" onClick={handleNext}>
-            <svg viewBox="0 0 24 24" fill="currentColor">
-              <path d="M6 18l8.5-6L6 6v12zM16 6v12h2V6h-2z" />
-            </svg>
-          </button>
         </div>
 
-        <div className="progress-container">
-          <div className="progress-bar">
-            <div className="progress-fill" style={{ width: `${progress}%` }} />
-          </div>
+        <div className="listeners-info">
+          <span>{currentChannel?.listeners || 0} listeners</span>
         </div>
       </div>
     </div>
