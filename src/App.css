@@ -443,18 +443,26 @@
 
 /* Inline Instructions */
 .instructions-inline {
-  position: absolute;
-  left: 50%;
-  transform: translateX(-50%);
   display: flex;
   align-items: center;
+  justify-content: center;
   gap: 12px;
-  background: rgba(20, 20, 20, 0.95);
-  backdrop-filter: blur(20px);
-  border: 1px solid rgba(255, 255, 255, 0.1);
+  background: rgba(0, 0, 0, 0.5);
+  backdrop-filter: blur(10px);
+  border: 1px solid rgba(255, 255, 255, 0.08);
   border-radius: 24px;
   padding: 10px 12px 10px 20px;
   white-space: nowrap;
+  position: relative;
+  z-index: 1;
+  margin: 0 auto;
+  width: fit-content;
+  opacity: 0;
+  transition: opacity 0.6s ease;
+}
+
+.instructions-inline.visible {
+  opacity: 1;
 }
 
 .instructions-inline span {

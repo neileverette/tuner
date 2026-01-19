@@ -77,15 +77,13 @@ function App() {
       .then(res => res.json())
       .then(data => {
         setChannels(data.channels)
-        // Restore last played channel's info
+        // Restore last played channel's info or default to first station
         const savedIndex = localStorage.getItem('tuner-selected-index')
-        if (savedIndex) {
-          const index = parseInt(savedIndex, 10)
-          if (data.channels[index]) {
-            setCurrentTrack(data.channels[index].lastPlaying || '')
-            if (!currentImage) {
-              setCurrentImage(data.channels[index].xlimage)
-            }
+        const index = savedIndex ? parseInt(savedIndex, 10) : 0
+        if (data.channels[index]) {
+          setCurrentTrack(data.channels[index].lastPlaying || '')
+          if (!currentImage) {
+            setCurrentImage(data.channels[index].xlimage)
           }
         }
       })
@@ -322,6 +320,18 @@ function App() {
         {channels.length > 0 ? `${channels.length} stations` : ''}
       </div>
 
+      {/* Instructions - above carousel */}
+      {showInstructions && (
+        <div className={`instructions-inline ${contentVisible ? 'visible' : ''}`}>
+          <span>Use <strong>← left</strong> and <strong>right →</strong> to tune. <strong>Spacebar ␣</strong> to play/pause. Click station guide to search.</span>
+          <button className="instructions-close" onClick={dismissInstructions}>
+            <svg viewBox="0 0 24 24" fill="currentColor">
+              <path d="M19 6.41L17.59 5 12 10.59 6.41 5 5 6.41 10.59 12 5 17.59 6.41 19 12 13.41 17.59 19 19 17.59 13.41 12z" />
+            </svg>
+          </button>
+        </div>
+      )}
+
       {/* Channel Carousel */}
       <div
         className={`carousel ${contentVisible ? 'visible' : ''}`}
@@ -415,16 +425,6 @@ function App() {
           <span className="artist">{currentChannel?.genre || ''}</span>
         </div>
 
-        {showInstructions && (
-          <div className="instructions-inline">
-            <span>Use left and right arrows to browse. Click on the station title to search.</span>
-            <button className="instructions-close" onClick={dismissInstructions}>
-              <svg viewBox="0 0 24 24" fill="currentColor">
-                <path d="M19 6.41L17.59 5 12 10.59 6.41 5 5 6.41 10.59 12 5 17.59 6.41 19 12 13.41 17.59 19 19 17.59 13.41 12z" />
-              </svg>
-            </button>
-          </div>
-        )}
 
         <div className="playback-controls">
           <button className="control-btn play-btn" onClick={handlePlayPause}>
