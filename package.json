@@ -6,8 +6,9 @@
   "scripts": {
     "dev": "concurrently \"npm run dev:frontend\" \"npm run dev:server\"",
     "dev:frontend": "vite",
-    "dev:server": "node server/index.js",
+    "dev:server": "npm run build:config && node server/index.js",
     "build": "tsc -b && vite build",
+    "build:config": "tsc -p tsconfig.server.json",
     "lint": "eslint .",
     "preview": "vite preview",
     "start": "node server/production.js"
