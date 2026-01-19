@@ -61,7 +61,7 @@ function App() {
     // Debounce the actual audio loading - wait for user to stop pressing keys
     playTimeoutRef.current = window.setTimeout(() => {
       if (audioRef.current) {
-        const proxyUrl = `http://localhost:3001/api/stream/${channels[index].id}`
+        const proxyUrl = `/api/stream/${channels[index].id}`
         console.log('Playing:', proxyUrl)
         audioRef.current.src = proxyUrl
         audioRef.current.volume = 1.0
