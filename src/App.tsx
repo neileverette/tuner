@@ -338,6 +338,7 @@ function App() {
             onClick={() => playChannel(index)}
           >
             <img src={channel.largeimage} alt={channel.title} />
+            <span className="carousel-item-title">{channel.title}</span>
           </div>
         ))}
       </div>

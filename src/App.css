@@ -142,7 +142,7 @@
   transition: opacity 0.6s ease;
   -webkit-mask-image: linear-gradient(to right, transparent, black 80px, black calc(100% - 80px), transparent);
   mask-image: linear-gradient(to right, transparent, black 80px, black calc(100% - 80px), transparent);
-  height: 96px;
+  height: 110px;
 }
 
 .carousel.visible {
@@ -155,16 +155,15 @@
 
 .carousel-item {
   width: 64px;
-  height: 64px;
   border: none;
   border-radius: 4px;
-  overflow: hidden;
+  overflow: visible;
   cursor: pointer;
   flex-shrink: 0;
   transition: all 0.2s ease;
   display: flex;
+  flex-direction: column;
   align-items: center;
-  justify-content: center;
   background: transparent;
 }
 
@@ -174,14 +173,36 @@
 
 .carousel-item.selected {
   width: 80px;
+}
+
+.carousel-item img {
+  width: 64px;
+  height: 64px;
+  object-fit: cover;
+  border-radius: 4px;
+}
+
+.carousel-item.selected img {
+  width: 80px;
   height: 80px;
   border: 4px solid #fff;
 }
 
-.carousel-item img {
-  width: 100%;
-  height: 100%;
-  object-fit: cover;
+.carousel-item-title {
+  font-size: 10px;
+  color: rgba(255, 255, 255, 0.7);
+  text-align: center;
+  width: 64px;
+  margin-top: 4px;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  transition: color 0.3s ease;
+}
+
+.carousel-item.selected .carousel-item-title {
+  color: #fff;
+  width: 80px;
 }
 
 .carousel-number {
