@@ -84,7 +84,7 @@ jobs:
           # Push public key to instance via EC2 Instance Connect
           aws ec2-instance-connect send-ssh-public-key \
             --instance-id $EC2_INSTANCE_ID \
-            --instance-os-user ubuntu \
+            --instance-os-user ec2-user \
             --ssh-public-key file:///tmp/ec2_key.pub \
             --availability-zone $EC2_AZ
 
@@ -92,7 +92,7 @@ jobs:
           sleep 5
 
           # SSH and deploy
-          ssh -o StrictHostKeyChecking=no -o UserKnownHostsFile=/dev/null -i /tmp/ec2_key ubuntu@$EC2_IP << 'DEPLOY_SCRIPT'
+          ssh -o StrictHostKeyChecking=no -o UserKnownHostsFile=/dev/null -i /tmp/ec2_key ec2-user@$EC2_IP << 'DEPLOY_SCRIPT'
             set -e
             echo "Logging into ECR..."
             aws ecr get-login-password --region us-east-1 | docker login --username AWS --password-stdin 070322435379.dkr.ecr.us-east-1.amazonaws.com
