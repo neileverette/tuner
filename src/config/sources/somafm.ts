@@ -1,9 +1,9 @@
 /**
- * SomaFM channel-to-genre mappings.
- * 49 channels mapped to normalized genre taxonomy.
+ * SomaFM channel-to-genre mappings and channel definitions.
+ * 49 channels mapped to normalized genre taxonomy with stream URLs.
  */
 
-import type { SourceConfig, ChannelGenreMapping } from '../types';
+import type { SourceConfig, ChannelGenreMapping, ChannelDefinition } from '../types';
 
 const channelMappings: readonly ChannelGenreMapping[] = [
   // Ambient & Chill (9 channels)
@@ -74,9 +74,45 @@ const channelMappings: readonly ChannelGenreMapping[] = [
   { channelId: 'n5md', primaryGenre: 'electronic' },
 ];
 
+/**
+ * Generate a SomaFM channel definition from channel ID.
+ * Uses SomaFM's standard URL patterns for streams and images.
+ */
+function createSomaFMChannel(id: string): ChannelDefinition {
+  return {
+    id,
+    title: id, // Placeholder - API provides real title
+    description: '', // Placeholder - API provides
+    dj: null,
+    image: {
+      small: `https://somafm.com/img/${id}120.png`,
+      medium: `https://somafm.com/img/${id}240.png`,
+      large: `https://somafm.com/img/${id}512.png`,
+    },
+    streams: [
+      { quality: 'high', format: 'aac', bitrate: 128, url: `https://ice1.somafm.com/${id}-128-aac` },
+      { quality: 'medium', format: 'mp3', bitrate: 128, url: `https://ice1.somafm.com/${id}-128-mp3` },
+      { quality: 'low', format: 'aac', bitrate: 64, url: `https://ice1.somafm.com/${id}-64-aac` },
+    ],
+    homepage: `https://somafm.com/${id}/`,
+  };
+}
+
+/**
+ * Channel definitions generated from genre mappings.
+ */
+const channelDefinitions: readonly ChannelDefinition[] = channelMappings.map(m => createSomaFMChannel(m.channelId));
+
 export const SOMAFM_CONFIG: SourceConfig = {
   id: 'somafm',
   name: 'SomaFM',
   homepage: 'https://somafm.com',
   channels: channelMappings,
+  api: {
+    channelsEndpoint: 'https://api.somafm.com/channels.json',
+    nowPlayingEndpoint: 'https://api.somafm.com/channels.json', // Now playing embedded in channels response
+    streamUrlTemplate: null, // Using static stream definitions
+    proxyRequired: true,
+  },
+  channelDefinitions,
 };
