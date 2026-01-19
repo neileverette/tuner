@@ -4,11 +4,12 @@
 
 import { SOMAFM_CONFIG } from './somafm';
 import { RADIO_PARADISE_CONFIG } from './radio-paradise';
-import type { SourceConfig, ChannelGenreMapping } from '../types';
+import type { SourceConfig, ChannelGenreMapping, ChannelDefinition } from '../types';
 
 // Re-export individual source configs
 export { SOMAFM_CONFIG } from './somafm';
 export { RADIO_PARADISE_CONFIG } from './radio-paradise';
+export { RP_CHANNEL_IDS } from './radio-paradise';
 
 // All sources
 export const SOURCES: readonly SourceConfig[] = [
@@ -36,6 +37,34 @@ export interface ChannelMappingWithSource extends ChannelGenreMapping {
 export function getAllChannelMappings(): readonly ChannelMappingWithSource[] {
   return SOURCES.flatMap(source =>
     source.channels.map(channel => ({
+      ...channel,
+      sourceId: source.id,
+    }))
+  );
+}
+
+/**
+ * Channel definition with source ID attached.
+ */
+export interface ChannelDefinitionWithSource extends ChannelDefinition {
+  readonly sourceId: string;
+}
+
+/**
+ * Get a single channel definition by source ID and channel ID.
+ */
+export function getChannelDefinition(sourceId: string, channelId: string): ChannelDefinition | undefined {
+  const source = getSource(sourceId);
+  if (!source) return undefined;
+  return source.channelDefinitions.find(ch => ch.id === channelId);
+}
+
+/**
+ * Get all channel definitions from all sources with source ID attached.
+ */
+export function getAllChannelDefinitions(): readonly ChannelDefinitionWithSource[] {
+  return SOURCES.flatMap(source =>
+    source.channelDefinitions.map(channel => ({
       ...channel,
       sourceId: source.id,
     }))
