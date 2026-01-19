@@ -315,12 +315,7 @@ function App() {
         )}
       </div>
 
-      {/* Station Count */}
-      <div className={`station-count ${contentVisible ? 'visible' : ''}`}>
-        {channels.length > 0 ? `${channels.length} stations` : ''}
-      </div>
-
-      {/* Instructions - above carousel */}
+      {/* Instructions */}
       {showInstructions && (
         <div className={`instructions-inline ${contentVisible ? 'visible' : ''}`}>
           <span>Use <strong>← left</strong> and <strong>right →</strong> to tune. <strong>Spacebar ␣</strong> to play/pause. Click station guide to search.</span>
@@ -331,6 +326,11 @@ function App() {
           </button>
         </div>
       )}
+
+      {/* Station Count - just above carousel */}
+      <div className={`station-count ${contentVisible ? 'visible' : ''}`}>
+        {channels.length > 0 ? `${channels.length} stations` : ''}
+      </div>
 
       {/* Channel Carousel */}
       <div
