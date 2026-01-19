@@ -1,0 +1,12 @@
+{
+  "project": "Visual updates - branding",
+  "initialized": "2026-01-19",
+  "mode": "yolo",
+  "depth": "standard",
+  "settings": {
+    "auto_approve": true,
+    "confirm_destructive": true,
+    "phases_target": "5-8",
+    "plans_per_phase": "3-5"
+  }
+}

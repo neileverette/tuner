@@ -34,12 +34,42 @@ function App() {
   const [showInstructions, setShowInstructions] = useState(() => {
     return localStorage.getItem('tuner-instructions-dismissed') !== 'true'
   })
+  const [showSplash, setShowSplash] = useState(true)
+  const [splashPhase, setSplashPhase] = useState<'visible' | 'fading' | 'hidden'>('visible')
+  const [headerVisible, setHeaderVisible] = useState(false)
+  const [contentVisible, setContentVisible] = useState(false)
   const audioRef = useRef<HTMLAudioElement | null>(null)
   const playTimeoutRef = useRef<number | null>(null)
   const carouselRef = useRef<HTMLDivElement | null>(null)
   const isDragging = useRef(false)
   const startX = useRef(0)
   const scrollLeft = useRef(0)
+
+  // Splash screen animation sequence
+  useEffect(() => {
+    if (!showSplash) return
+
+    // Wait 2 seconds, then start fade out
+    const fadeTimer = setTimeout(() => {
+      setSplashPhase('fading')
+    }, 2000)
+
+    // After fade animation (0.8s), hide splash and show header
+    const hideTimer = setTimeout(() => {
+      setSplashPhase('hidden')
+      setShowSplash(false)
+      // Slide in header and fade in content after splash is gone
+      setTimeout(() => {
+        setHeaderVisible(true)
+        setContentVisible(true)
+      }, 100)
+    }, 2800)
+
+    return () => {
+      clearTimeout(fadeTimer)
+      clearTimeout(hideTimer)
+    }
+  }, [showSplash])
 
   // Fetch channels from SomaFM
   useEffect(() => {
@@ -255,6 +285,20 @@ function App() {
       {/* Audio element */}
       <audio ref={audioRef} preload="none" />
 
+      {/* Header with logo */}
+      <header className={`app-header ${headerVisible ? 'visible' : ''}`}>
+        <img src="/tuner-logo.svg" alt="Tuner" className="header-logo" />
+      </header>
+
+      {/* Splash Screen */}
+      {showSplash && (
+        <div className={`splash-screen ${splashPhase}`}>
+          <div className="splash-blur-bg" style={{ backgroundImage: currentImage ? `url(${currentImage})` : undefined }} />
+          <div className="splash-overlay" />
+          <img src="/tuner-logo.svg" alt="Tuner" className="splash-logo" />
+        </div>
+      )}
+
       {/* Hero Channel Art with Crossfade */}
       <div className="hero-artwork">
         {prevImage && (
@@ -273,9 +317,14 @@ function App() {
         )}
       </div>
 
+      {/* Station Count */}
+      <div className={`station-count ${contentVisible ? 'visible' : ''}`}>
+        {channels.length > 0 ? `${channels.length} stations` : ''}
+      </div>
+
       {/* Channel Carousel */}
       <div
-        className="carousel"
+        className={`carousel ${contentVisible ? 'visible' : ''}`}
         ref={carouselRef}
         onMouseDown={handleMouseDown}
         onMouseMove={handleMouseMove}
@@ -355,13 +404,11 @@ function App() {
       )}
 
       {/* Bottom Controls */}
-      <div className="controls">
+      <div className={`controls ${contentVisible ? 'visible' : ''}`}>
         <div className="track-info" onClick={() => setShowStationPicker(!showStationPicker)}>
           <span className="playlist-name">
             {currentChannel?.title || 'Select Station'}
-            <svg className="chevron" viewBox="0 0 24 24" fill="currentColor">
-              <path d="M7 10l5 5 5-5z" />
-            </svg>
+            <span className="material-symbols-outlined menu-icon">menu_open</span>
           </span>
           <span className="song-name">{currentTrack || 'No track info'}</span>
           <span className="artist">{currentChannel?.genre || ''}</span>
