@@ -20,8 +20,11 @@ function App() {
   const [selectedIndex, setSelectedIndex] = useState(0)
   const [isPlaying, setIsPlaying] = useState(false)
   const [currentTrack, setCurrentTrack] = useState('')
+  const [currentImage, setCurrentImage] = useState('')
+  const [prevImage, setPrevImage] = useState('')
+  const [isTransitioning, setIsTransitioning] = useState(false)
   const audioRef = useRef<HTMLAudioElement | null>(null)
-  const isChangingChannel = useRef(false)
+  const playTimeoutRef = useRef<number | null>(null)
 
   // Fetch channels from SomaFM
   useEffect(() => {
@@ -33,44 +36,50 @@ function App() {
       .catch(err => console.error('Failed to fetch channels:', err))
   }, [])
 
-  // Get stream URL (prefer highest quality mp3)
-  const getStreamUrl = useCallback((channel: Channel) => {
-    const mp3Stream = channel.playlists.find(p => p.format === 'mp3' && p.quality === 'highest')
-      || channel.playlists.find(p => p.format === 'mp3')
-      || channel.playlists[0]
-    return mp3Stream?.url.replace('.pls', '') || ''
-  }, [])
-
-  // Play channel
+  // Play channel with debounced audio loading
   const playChannel = useCallback((index: number) => {
-    if (!channels[index] || isChangingChannel.current) return
+    if (!channels[index]) return
 
-    isChangingChannel.current = true
+    // Update selection immediately
     setSelectedIndex(index)
     setCurrentTrack(channels[index].lastPlaying || '')
 
-    if (audioRef.current) {
-      // Proxy through our server to avoid CORS/403 issues
-      const proxyUrl = `http://localhost:3001/api/stream/${channels[index].id}`
-      console.log('Playing:', proxyUrl)
-      audioRef.current.src = proxyUrl
-      audioRef.current.volume = 1.0
-      const playPromise = audioRef.current.play()
-      if (playPromise !== undefined) {
-        playPromise
-          .then(() => {
-            console.log('Playback started')
-            setIsPlaying(true)
-          })
-          .catch(err => {
-            console.error('Playback error:', err)
-            setIsPlaying(false)
-          })
-      }
+    // Trigger image transition
+    const newImage = channels[index].xlimage
+    if (newImage !== currentImage) {
+      setPrevImage(currentImage)
+      setCurrentImage(newImage)
+      setIsTransitioning(true)
+      setTimeout(() => setIsTransitioning(false), 600)
     }
 
-    setTimeout(() => { isChangingChannel.current = false }, 500)
-  }, [channels, getStreamUrl])
+    // Cancel any pending audio load
+    if (playTimeoutRef.current) {
+      clearTimeout(playTimeoutRef.current)
+    }
+
+    // Debounce the actual audio loading - wait for user to stop pressing keys
+    playTimeoutRef.current = window.setTimeout(() => {
+      if (audioRef.current) {
+        const proxyUrl = `http://localhost:3001/api/stream/${channels[index].id}`
+        console.log('Playing:', proxyUrl)
+        audioRef.current.src = proxyUrl
+        audioRef.current.volume = 1.0
+        const playPromise = audioRef.current.play()
+        if (playPromise !== undefined) {
+          playPromise
+            .then(() => {
+              console.log('Playback started')
+              setIsPlaying(true)
+            })
+            .catch(err => {
+              console.error('Playback error:', err)
+              setIsPlaying(false)
+            })
+        }
+      }
+    }, 300)
+  }, [channels])
 
   // Control functions
   const handlePlayPause = useCallback(() => {
@@ -149,10 +158,21 @@ function App() {
       {/* Audio element */}
       <audio ref={audioRef} preload="none" />
 
-      {/* Hero Channel Art */}
+      {/* Hero Channel Art with Crossfade */}
       <div className="hero-artwork">
-        {currentChannel?.xlimage && (
-          <img src={currentChannel.xlimage} alt={currentChannel.title || 'Channel art'} />
+        {prevImage && (
+          <img
+            src={prevImage}
+            alt=""
+            className={`hero-image hero-image-prev ${isTransitioning ? 'transitioning' : ''}`}
+          />
+        )}
+        {currentImage && (
+          <img
+            src={currentImage}
+            alt={currentChannel?.title || 'Channel art'}
+            className={`hero-image hero-image-current ${isTransitioning ? 'transitioning' : ''}`}
+          />
         )}
       </div>
 
