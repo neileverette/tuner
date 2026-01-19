@@ -2,6 +2,11 @@ import express from 'express';
 import cors from 'cors';
 import http from 'http';
 import https from 'https';
+import { createRequire } from 'module';
+
+// Import compiled TypeScript config (CommonJS modules)
+const require = createRequire(import.meta.url);
+const { aggregateByGenre, aggregateBySource } = require('../dist/config/aggregation');
 
 const app = express();
 app.use(cors());
@@ -20,6 +25,33 @@ const RP_CONTENT_TYPES = {
   flac: 'audio/flac',
   mp3: 'audio/mpeg'
 };
+
+/**
+ * GET /api/channels
+ *
+ * Returns all channels organized by genre (default) or by source.
+ *
+ * Query parameters:
+ *   view: 'genre' (default) | 'source'
+ *
+ * Response shapes:
+ *   genre view: { view: 'genre', genres: [{ id, name, channels: [...] }] }
+ *   source view: { view: 'source', sources: [{ id, name, genres: [...] }] }
+ */
+app.get('/api/channels', (req, res) => {
+  const view = req.query.view || 'genre';
+
+  try {
+    if (view === 'source') {
+      res.json(aggregateBySource());
+    } else {
+      res.json(aggregateByGenre());
+    }
+  } catch (err) {
+    console.error('Channels API error:', err);
+    res.status(500).json({ error: 'Failed to aggregate channels' });
+  }
+});
 
 // Proxy Radio Paradise streams
 app.get('/api/rp/stream/:channelId/:format', (req, res) => {
