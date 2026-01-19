@@ -5,16 +5,16 @@
 See: .planning/PROJECT.md (Genre Organizer)
 
 **Core value:** Multi-source radio aggregator with unified genre classification
-**Current focus:** Phase 2 Complete - Ready for Phase 3
+**Current focus:** Phase 3 Complete - Ready for Phase 4 or Phase 5 (parallel)
 
 ## Current Position
 
-Phase: 2 of 8 (Source Registry System) - COMPLETE
-Plan: 02-01-PLAN.md executed successfully
-Status: Phase 2 complete, source registry with channel definitions implemented
-Last activity: 2026-01-19 - Executed 02-01-PLAN.md
+Phase: 3 of 8 (Radio Paradise Integration) - COMPLETE
+Plan: 03-01-PLAN.md executed successfully
+Status: Phase 3 complete, Radio Paradise proxy endpoints added to backend
+Last activity: 2026-01-19 - Executed 03-01-PLAN.md
 
-Progress: [###       ] 25%
+Progress: [####      ] 37.5%
 
 ## Phase Summary
 
@@ -22,8 +22,8 @@ Progress: [###       ] 25%
 |-------|-------------|--------|--------------|
 | 1 | Genre Registry & Taxonomy | **Complete** | - |
 | 2 | Source Registry System | **Complete** | Phase 1 |
-| 3 | Radio Paradise Integration | Ready | Phase 2 |
-| 4 | Backend API Organization | Not Started | Phase 3 |
+| 3 | Radio Paradise Integration | **Complete** | Phase 2 |
+| 4 | Backend API Organization | Ready | Phase 3 |
 | 5 | UI Refactoring | Ready (parallel) | - |
 | 6 | Genre Panel Updates | Not Started | Phase 4, 5 |
 | 7 | View Mode Toggle | Not Started | Phase 6 |
@@ -31,7 +31,7 @@ Progress: [###       ] 25%
 
 ## Parallel Workstreams
 
-**Stream A (Data/Backend):** Phase 1 (DONE) -> 2 (DONE) -> 3 -> 4
+**Stream A (Data/Backend):** Phase 1 (DONE) -> 2 (DONE) -> 3 (DONE) -> 4
 **Stream B (Frontend):** Phase 5 (Ready to start)
 
 Both converge at Phase 6.
@@ -57,6 +57,11 @@ Both converge at Phase 6.
   - Updated src/config/sources/somafm.ts (49 channel definitions with streams)
   - Updated src/config/sources/radio-paradise.ts (4 channel definitions with streams)
   - Updated src/config/sources/index.ts (getChannelDefinition, getAllChannelDefinitions)
+- Phase 3 plan (03-01-PLAN.md)
+- Phase 3 implementation (03-01-SUMMARY.md)
+  - Added Radio Paradise stream proxy: /api/rp/stream/:channelId/:format
+  - Added Radio Paradise now-playing proxy: /api/rp/now-playing/:chan
+  - Supports all 4 channels (Main, Mellow, Rock, Global) and 3 formats (AAC, FLAC, MP3)
 
 ## Key Artifacts
 
@@ -65,18 +70,19 @@ Both converge at Phase 6.
 | src/config/genres.ts | Genre taxonomy (8 categories, GenreId type) |
 | src/config/types.ts | All config interfaces (ChannelDefinition, StreamDefinition, SourceApiConfig) |
 | src/config/sources/index.ts | Source registry (SOURCES, getAllChannelMappings, getAllChannelDefinitions) |
+| server/index.js | Express backend with SomaFM and Radio Paradise CORS proxies |
 
 ## Session Continuity
 
 Last session: 2026-01-19
-Completed: Phase 2 plan executed
-Resume: Create Phase 3 plan (Radio Paradise Integration) or start Phase 5 (UI Refactoring) in parallel
+Completed: Phase 3 plan executed
+Resume: Create Phase 4 plan (Backend API Organization) or start Phase 5 (UI Refactoring) in parallel
 
 ## Next Steps
 
-1. **Option A:** Create Phase 3 plan (Radio Paradise Integration) - builds on Phase 2
+1. **Option A:** Create Phase 4 plan (Backend API Organization) - builds on Phase 3
 2. **Option B:** Create Phase 5 plan (UI Refactoring) - can run in parallel
-3. Phase 3 research is now complete (Radio Paradise Integration Guide available)
+3. Phase 4 will create /api/channels endpoint with ?view=genre|source parameter
 
 ---
 *Updated: 2026-01-19*
