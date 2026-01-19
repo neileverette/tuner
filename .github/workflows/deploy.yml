@@ -65,31 +65,58 @@ jobs:
             sleep 30
           fi
 
-      - name: Get EC2 public IP
-        id: ec2-ip
+      - name: Get EC2 info
+        id: ec2-info
         run: |
           IP=$(aws ec2 describe-instances --instance-ids $EC2_INSTANCE_ID --query 'Reservations[0].Instances[0].PublicIpAddress' --output text)
+          AZ=$(aws ec2 describe-instances --instance-ids $EC2_INSTANCE_ID --query 'Reservations[0].Instances[0].Placement.AvailabilityZone' --output text)
           echo "ip=$IP" >> $GITHUB_OUTPUT
+          echo "az=$AZ" >> $GITHUB_OUTPUT
 
-      - name: Deploy to EC2 via SSM
+      - name: Deploy to EC2 via Instance Connect
         env:
-          ECR_REGISTRY: 070322435379.dkr.ecr.us-east-1.amazonaws.com
+          EC2_IP: ${{ steps.ec2-info.outputs.ip }}
+          EC2_AZ: ${{ steps.ec2-info.outputs.az }}
         run: |
-          aws ssm send-command \
-            --instance-ids $EC2_INSTANCE_ID \
-            --document-name "AWS-RunShellScript" \
-            --parameters 'commands=[
-              "aws ecr get-login-password --region us-east-1 | docker login --username AWS --password-stdin 070322435379.dkr.ecr.us-east-1.amazonaws.com",
-              "docker pull 070322435379.dkr.ecr.us-east-1.amazonaws.com/tuner:latest",
-              "docker stop tuner || true",
-              "docker rm tuner || true",
-              "docker run -d --name tuner -p 3001:3001 --restart unless-stopped 070322435379.dkr.ecr.us-east-1.amazonaws.com/tuner:latest"
-            ]' \
-            --timeout-seconds 300 \
-            --output text
+          # Generate temporary SSH key
+          ssh-keygen -t rsa -f /tmp/ec2_key -N "" -q
+
+          # Push public key to instance via EC2 Instance Connect
+          aws ec2-instance-connect send-ssh-public-key \
+            --instance-id $EC2_INSTANCE_ID \
+            --instance-os-user ubuntu \
+            --ssh-public-key file:///tmp/ec2_key.pub \
+            --availability-zone $EC2_AZ
+
+          # Wait for key to propagate
+          sleep 5
+
+          # SSH and deploy
+          ssh -o StrictHostKeyChecking=no -o UserKnownHostsFile=/dev/null -i /tmp/ec2_key ubuntu@$EC2_IP << 'DEPLOY_SCRIPT'
+            set -e
+            echo "Logging into ECR..."
+            aws ecr get-login-password --region us-east-1 | docker login --username AWS --password-stdin 070322435379.dkr.ecr.us-east-1.amazonaws.com
+
+            echo "Pulling latest image..."
+            docker pull 070322435379.dkr.ecr.us-east-1.amazonaws.com/tuner:latest
+
+            echo "Stopping existing container..."
+            docker stop tuner || true
+            docker rm tuner || true
+
+            echo "Starting new container..."
+            docker run -d --name tuner -p 3001:3001 --restart unless-stopped 070322435379.dkr.ecr.us-east-1.amazonaws.com/tuner:latest
+
+            echo "Deployment complete!"
+            docker ps | grep tuner
+          DEPLOY_SCRIPT
+
+          # Cleanup
+          rm -f /tmp/ec2_key /tmp/ec2_key.pub
 
       - name: Output deployment info
         run: |
           echo "Deployed to EC2 instance: $EC2_INSTANCE_ID"
-          echo "Public IP: ${{ steps.ec2-ip.outputs.ip }}"
-          echo "App URL: http://${{ steps.ec2-ip.outputs.ip }}:3001"
+          echo "Public IP: ${{ steps.ec2-info.outputs.ip }}"
+          echo "App URL: http://${{ steps.ec2-info.outputs.ip }}:3001"
+          echo "DNS URL: http://tuner.neil-everette.com:3001"
