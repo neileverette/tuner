@@ -2,11 +2,9 @@ import express from 'express';
 import cors from 'cors';
 import http from 'http';
 import https from 'https';
-import { createRequire } from 'module';
 
-// Import compiled TypeScript config (CommonJS modules)
-const require = createRequire(import.meta.url);
-const { aggregateByGenre, aggregateBySource } = require('../dist/config/aggregation');
+// Import compiled TypeScript config (ESM modules)
+import { aggregateByGenre, aggregateBySource } from '../dist/config/aggregation.js';
 
 const app = express();
 app.use(cors());

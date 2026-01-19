@@ -4,17 +4,17 @@
  * Transforms source registry data into API response shapes.
  */
 
-import { GENRE_LIST, getGenre } from './genres';
-import type { GenreId } from './genres';
-import { SOURCES, getAllChannelDefinitions, getAllChannelMappings } from './sources/index';
-import type { ChannelDefinitionWithSource, ChannelMappingWithSource } from './sources/index';
+import { GENRE_LIST, getGenre } from './genres.js';
+import type { GenreId } from './genres.js';
+import { SOURCES, getAllChannelDefinitions, getAllChannelMappings } from './sources/index.js';
+import type { ChannelDefinitionWithSource, ChannelMappingWithSource } from './sources/index.js';
 import type {
   ApiChannel,
   GenreGroup,
   SourceGroup,
   GenreViewResponse,
   SourceViewResponse,
-} from './api-types';
+} from './api-types.js';
 
 /**
  * Transform a channel definition + mapping into API response format.

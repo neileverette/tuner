@@ -2,7 +2,7 @@
  * Shared TypeScript interfaces for multi-source radio aggregation.
  */
 
-import type { GenreId } from './genres';
+import type { GenreId } from './genres.js';
 
 /**
  * Channel-to-genre mapping for a single channel.

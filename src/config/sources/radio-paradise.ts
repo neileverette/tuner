@@ -3,7 +3,7 @@
  * 4 channels mapped to normalized genre taxonomy with stream URLs.
  */
 
-import type { SourceConfig, ChannelDefinition } from '../types';
+import type { SourceConfig, ChannelDefinition } from '../types.js';
 
 /**
  * Radio Paradise channel API identifiers (for now playing API).

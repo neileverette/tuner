@@ -2,14 +2,14 @@
  * Source registry - aggregates all radio source configurations.
  */
 
-import { SOMAFM_CONFIG } from './somafm';
-import { RADIO_PARADISE_CONFIG } from './radio-paradise';
-import type { SourceConfig, ChannelGenreMapping, ChannelDefinition } from '../types';
+import { SOMAFM_CONFIG } from './somafm.js';
+import { RADIO_PARADISE_CONFIG } from './radio-paradise.js';
+import type { SourceConfig, ChannelGenreMapping, ChannelDefinition } from '../types.js';
 
 // Re-export individual source configs
-export { SOMAFM_CONFIG } from './somafm';
-export { RADIO_PARADISE_CONFIG } from './radio-paradise';
-export { RP_CHANNEL_IDS } from './radio-paradise';
+export { SOMAFM_CONFIG } from './somafm.js';
+export { RADIO_PARADISE_CONFIG } from './radio-paradise.js';
+export { RP_CHANNEL_IDS } from './radio-paradise.js';
 
 // All sources
 export const SOURCES: readonly SourceConfig[] = [

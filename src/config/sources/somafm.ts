@@ -3,7 +3,7 @@
  * 49 channels mapped to normalized genre taxonomy with stream URLs.
  */
 
-import type { SourceConfig, ChannelGenreMapping, ChannelDefinition } from '../types';
+import type { SourceConfig, ChannelGenreMapping, ChannelDefinition } from '../types.js';
 
 const channelMappings: readonly ChannelGenreMapping[] = [
   // Ambient & Chill (9 channels)
