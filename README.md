@@ -164,6 +164,10 @@ npm start
 
 Serves the built app with integrated proxy on port 3001.
 
+### Deployment
+
+The app deploys automatically via GitHub Actions when pushing to `main`. The workflow builds the app and deploys to the production server.
+
 ## Adding a New Source
 
 1. **Create adapter** in `src/adapters/`:
