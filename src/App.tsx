@@ -239,6 +239,7 @@ function App() {
         isTransitioning={isTransitioning}
         transitionDirection={transitionDirection}
         altText={selectedChannel?.title || 'Channel art'}
+        isKexp={selectedChannel?.id.startsWith('kexp:')}
       />
 
       {/* Instructions */}

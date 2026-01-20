@@ -28,6 +28,7 @@ const RP_FALLBACK_IMAGE = 'https://img.radioparadise.com/logos/rp_logo_128.png'
 
 function ChannelCard({ channel, index, isSelected, onSelect, overrideImage }: ChannelCardProps) {
   const source = getSourceFromId(channel.id)
+  const isKexp = source === 'kexp'
 
   // Use override image if provided, otherwise channel default, with RP fallback
   const imageUrl = overrideImage
@@ -40,8 +41,14 @@ function ChannelCard({ channel, index, isSelected, onSelect, overrideImage }: Ch
       onClick={() => onSelect(index)}
     >
       <div className="carousel-item-image-wrapper">
-        <img src={imageUrl} alt={channel.title} />
-        {source && <span className={`source-badge source-${source}`}>{getSourceBadgeLabel(source)}</span>}
+        {isKexp ? (
+          <div className="kexp-logo-container">
+            <img src="https://www.kexp.org/static/assets/img/logo-header.svg" alt="KEXP" />
+          </div>
+        ) : (
+          <img src={imageUrl} alt={channel.title} />
+        )}
+        {source && !isKexp && <span className={`source-badge source-${source}`}>{getSourceBadgeLabel(source)}</span>}
       </div>
       <span className="carousel-item-title">{channel.title}</span>
     </div>

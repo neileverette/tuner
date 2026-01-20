@@ -4,6 +4,7 @@ interface HeroArtworkProps {
   isTransitioning: boolean
   transitionDirection: 'left' | 'right'
   altText: string
+  isKexp?: boolean
 }
 
 function HeroArtwork({
@@ -11,8 +12,20 @@ function HeroArtwork({
   prevImage,
   isTransitioning,
   transitionDirection,
-  altText
+  altText,
+  isKexp = false
 }: HeroArtworkProps) {
+  if (isKexp) {
+    return (
+      <div className="hero-artwork">
+        <div className="hero-kexp-logo">
+          <img src="https://www.kexp.org/static/assets/img/logo-header.svg" alt="" className="hero-kexp-blur" />
+          <img src="https://www.kexp.org/static/assets/img/logo-header.svg" alt="KEXP" className="hero-kexp-main" />
+        </div>
+      </div>
+    )
+  }
+
   return (
     <div className="hero-artwork">
       {prevImage && (
