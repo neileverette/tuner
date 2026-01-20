@@ -1,10 +1,11 @@
 import { useState, useEffect, useCallback, useRef } from 'react'
 import './App.css'
 import ChannelCarousel from './components/ChannelCarousel'
+import PlayerControls from './components/PlayerControls'
 import { useChannels, useNowPlaying } from './hooks'
 
 function App() {
-  const { channels, getStreamUrl } = useChannels()
+  const { channels, isLoading, error, refetch, getStreamUrl } = useChannels()
   const [selectedIndex, setSelectedIndex] = useState(() => {
     const saved = localStorage.getItem('tuner-selected-index')
     return saved ? parseInt(saved, 10) : 0
@@ -24,6 +25,8 @@ function App() {
   const [transitionDirection, setTransitionDirection] = useState<'left' | 'right'>('right')
   const [showStationPicker, setShowStationPicker] = useState(false)
   const [stationSearch, setStationSearch] = useState('')
+  const [sourceFilter, setSourceFilter] = useState<'all' | 'somafm' | 'radioparadise'>('all')
+  const [streamError, setStreamError] = useState<string | null>(null)
   const [showInstructions, setShowInstructions] = useState(() => {
     return localStorage.getItem('tuner-instructions-dismissed') !== 'true'
   })
@@ -61,15 +64,25 @@ function App() {
   }, [showSplash])
 
   // Restore initial state from channels when loaded
+  // Also handles migration: if saved index is out of bounds (e.g., channel list changed), reset to 0
   useEffect(() => {
     if (channels.length === 0) return
     const savedIndex = localStorage.getItem('tuner-selected-index')
     const index = savedIndex ? parseInt(savedIndex, 10) : 0
-    const channel = channels[index] || channels[0]
+
+    // Validate index is within bounds
+    const validIndex = index >= 0 && index < channels.length ? index : 0
+    if (validIndex !== selectedIndex) {
+      setSelectedIndex(validIndex)
+      localStorage.setItem('tuner-selected-index', validIndex.toString())
+    }
+
+    const channel = channels[validIndex]
     if (channel && !currentImage) {
       setCurrentImage(channel.image.large)
+      localStorage.setItem('tuner-current-image', channel.image.large)
     }
-  }, [channels, currentImage])
+  }, [channels, currentImage, selectedIndex])
 
   // Play channel with debounced audio loading
   const playChannel = useCallback((index: number) => {
@@ -104,6 +117,9 @@ function App() {
       clearTimeout(playTimeoutRef.current)
     }
 
+    // Clear any previous stream error
+    setStreamError(null)
+
     // Debounce the actual audio loading - wait for user to stop pressing keys
     playTimeoutRef.current = window.setTimeout(() => {
       if (audioRef.current) {
@@ -121,6 +137,7 @@ function App() {
             .catch(err => {
               console.error('Playback error:', err)
               setIsPlaying(false)
+              setStreamError('Failed to start playback')
             })
         }
       }
@@ -204,10 +221,24 @@ function App() {
     )
   }
 
+  // Get source label from channel ID
+  const getSourceLabel = (id: string): string | null => {
+    if (id.startsWith('somafm:')) return 'SomaFM'
+    if (id.startsWith('rp:')) return 'Radio Paradise'
+    return null
+  }
+
   return (
     <div className="tuner">
       {/* Audio element */}
-      <audio ref={audioRef} preload="none" />
+      <audio
+        ref={audioRef}
+        preload="none"
+        onError={() => {
+          setStreamError('Stream connection failed')
+          setIsPlaying(false)
+        }}
+      />
 
       {/* Header with logo */}
       <header className={`app-header ${headerVisible ? 'visible' : ''}`}>
@@ -253,9 +284,29 @@ function App() {
         </div>
       )}
 
+      {/* Error Banner - Channel fetch error */}
+      {error && (
+        <div className={`error-banner ${contentVisible ? 'visible' : ''}`}>
+          <span>Failed to load stations</span>
+          <button onClick={() => refetch()}>Retry</button>
+        </div>
+      )}
+
+      {/* Error Banner - Stream error */}
+      {streamError && (
+        <div className={`error-banner stream-error ${contentVisible ? 'visible' : ''}`}>
+          <span>{streamError}</span>
+          <button onClick={() => {
+            setStreamError(null)
+            if (selectedChannel) playChannel(selectedIndex)
+          }}>Retry</button>
+          <button onClick={() => setStreamError(null)}>Dismiss</button>
+        </div>
+      )}
+
       {/* Station Count - just above carousel */}
       <div className={`station-count ${contentVisible ? 'visible' : ''}`}>
-        {channels.length > 0 ? `${channels.length} stations` : ''}
+        {isLoading ? 'Loading stations...' : channels.length > 0 ? `${channels.length} stations` : 'No stations available'}
       </div>
 
       {/* Channel Carousel */}
@@ -290,16 +341,52 @@ function App() {
                 </svg>
               </button>
             </div>
+            <div className="station-picker-filters">
+              <button
+                className={`filter-chip ${sourceFilter === 'all' ? 'active' : ''}`}
+                onClick={() => setSourceFilter('all')}
+              >
+                All
+              </button>
+              <button
+                className={`filter-chip filter-somafm ${sourceFilter === 'somafm' ? 'active' : ''}`}
+                onClick={() => setSourceFilter('somafm')}
+              >
+                SomaFM
+              </button>
+              <button
+                className={`filter-chip filter-rp ${sourceFilter === 'radioparadise' ? 'active' : ''}`}
+                onClick={() => setSourceFilter('radioparadise')}
+              >
+                Radio Paradise
+              </button>
+            </div>
             <div className="station-picker-list">
-              {channels
-                .map((channel, index) => ({ channel, index }))
-                .filter(({ channel }) =>
-                  stationSearch === '' ||
-                  channel.title.toLowerCase().includes(stationSearch.toLowerCase()) ||
-                  channel.description.toLowerCase().includes(stationSearch.toLowerCase()) ||
-                  channel.genre.toLowerCase().includes(stationSearch.toLowerCase())
-                )
-                .map(({ channel, index }) => (
+              {(() => {
+                const filteredChannels = channels
+                  .map((channel, index) => ({ channel, index }))
+                  .filter(({ channel }) => {
+                    // Source filter
+                    if (sourceFilter === 'somafm' && !channel.id.startsWith('somafm:')) return false
+                    if (sourceFilter === 'radioparadise' && !channel.id.startsWith('rp:')) return false
+                    // Text search filter
+                    if (stationSearch === '') return true
+                    return (
+                      channel.title.toLowerCase().includes(stationSearch.toLowerCase()) ||
+                      channel.description.toLowerCase().includes(stationSearch.toLowerCase()) ||
+                      channel.genre.toLowerCase().includes(stationSearch.toLowerCase())
+                    )
+                  })
+
+                if (filteredChannels.length === 0) {
+                  return (
+                    <div className="station-picker-empty">
+                      No matching stations
+                    </div>
+                  )
+                }
+
+                return filteredChannels.map(({ channel, index }) => (
                   <div
                     key={channel.id}
                     className={`station-item ${index === selectedIndex ? 'selected' : ''}`}
@@ -310,7 +397,14 @@ function App() {
                     }}
                   >
                     <div className="station-item-left">
-                      <span className="station-item-name">{highlightMatch(channel.title, stationSearch)}</span>
+                      <div className="station-item-header">
+                        <span className="station-item-name">{highlightMatch(channel.title, stationSearch)}</span>
+                        {getSourceLabel(channel.id) && (
+                          <span className={`station-item-source ${channel.id.startsWith('rp:') ? 'source-rp' : 'source-somafm'}`}>
+                            {getSourceLabel(channel.id)}
+                          </span>
+                        )}
+                      </div>
                       <span className="station-item-meta">{highlightMatch(channel.description, stationSearch)}</span>
                       {channel.genre && <span className="station-item-genre">{highlightMatch(channel.genre, stationSearch)}</span>}
                     </div>
@@ -321,42 +415,22 @@ function App() {
                       </div>
                     )}
                   </div>
-                ))}
+                ))
+              })()}
             </div>
           </div>
         </div>
       )}
 
       {/* Bottom Controls */}
-      <div className={`controls ${contentVisible ? 'visible' : ''}`}>
-        <div className="track-info" onClick={() => setShowStationPicker(!showStationPicker)}>
-          <span className="playlist-name">
-            {selectedChannel?.title || 'Select Station'}
-            <span className="material-symbols-outlined menu-icon">menu_open</span>
-          </span>
-          <span className="song-name">{currentTrack || 'No track info'}</span>
-          <span className="artist">{selectedChannel?.genre || ''}</span>
-        </div>
-
-
-        <div className="playback-controls">
-          <button className="control-btn play-btn" onClick={handlePlayPause}>
-            {isPlaying ? (
-              <svg viewBox="0 0 24 24" fill="currentColor">
-                <path d="M6 19h4V5H6v14zm8-14v14h4V5h-4z" />
-              </svg>
-            ) : (
-              <svg viewBox="0 0 24 24" fill="currentColor">
-                <path d="M8 5v14l11-7z" />
-              </svg>
-            )}
-          </button>
-        </div>
-
-        <div className="listeners-info">
-          <span>{selectedChannel?.listeners ?? 0} listeners</span>
-        </div>
-      </div>
+      <PlayerControls
+        currentChannel={selectedChannel}
+        currentTrack={currentTrack}
+        isPlaying={isPlaying}
+        onPlayPause={handlePlayPause}
+        onOpenStationPicker={() => setShowStationPicker(true)}
+        visible={contentVisible}
+      />
     </div>
   )
 }
