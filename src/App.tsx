@@ -3,6 +3,9 @@ import './App.css'
 import ChannelCarousel from './components/ChannelCarousel'
 import PlayerControls from './components/PlayerControls'
 import StationPicker from './components/StationPicker'
+import HeroArtwork from './components/HeroArtwork'
+import SplashScreen from './components/SplashScreen'
+import Instructions from './components/Instructions'
 import { useChannels, useNowPlaying } from './hooks'
 
 function App() {
@@ -204,12 +207,6 @@ function App() {
     }
   }, [nowPlaying])
 
-  // Dismiss instructions
-  const dismissInstructions = () => {
-    setShowInstructions(false)
-    localStorage.setItem('tuner-instructions-dismissed', 'true')
-  }
-
   return (
     <div className="tuner">
       {/* Audio element */}
@@ -229,41 +226,30 @@ function App() {
 
       {/* Splash Screen */}
       {showSplash && (
-        <div className={`splash-screen ${splashPhase}`}>
-          <div className="splash-blur-bg" style={{ backgroundImage: currentImage ? `url(${currentImage})` : undefined }} />
-          <div className="splash-overlay" />
-          <img src="/tuner-logo.svg" alt="Tuner" className="splash-logo" />
-        </div>
+        <SplashScreen
+          phase={splashPhase}
+          backgroundImage={currentImage}
+        />
       )}
 
       {/* Hero Channel Art with Crossfade */}
-      <div className="hero-artwork">
-        {prevImage && (
-          <img
-            src={prevImage}
-            alt=""
-            className={`hero-image hero-image-prev ${isTransitioning ? `transitioning ${transitionDirection}` : ''}`}
-          />
-        )}
-        {currentImage && (
-          <img
-            src={currentImage}
-            alt={selectedChannel?.title || 'Channel art'}
-            className={`hero-image hero-image-current ${isTransitioning ? `transitioning ${transitionDirection}` : ''}`}
-          />
-        )}
-      </div>
+      <HeroArtwork
+        currentImage={currentImage}
+        prevImage={prevImage}
+        isTransitioning={isTransitioning}
+        transitionDirection={transitionDirection}
+        altText={selectedChannel?.title || 'Channel art'}
+      />
 
       {/* Instructions */}
       {showInstructions && (
-        <div className={`instructions-inline ${contentVisible ? 'visible' : ''}`}>
-          <span>Use <strong>← left</strong> and <strong>right →</strong> to tune. <strong>Spacebar ␣</strong> to play/pause. Click station guide to search.</span>
-          <button className="instructions-close" onClick={dismissInstructions}>
-            <svg viewBox="0 0 24 24" fill="currentColor">
-              <path d="M19 6.41L17.59 5 12 10.59 6.41 5 5 6.41 10.59 12 5 17.59 6.41 19 12 13.41 17.59 19 19 17.59 13.41 12z" />
-            </svg>
-          </button>
-        </div>
+        <Instructions
+          visible={contentVisible}
+          onDismiss={() => {
+            setShowInstructions(false)
+            localStorage.setItem('tuner-instructions-dismissed', 'true')
+          }}
+        />
       )}
 
       {/* Error Banner - Channel fetch error */}
