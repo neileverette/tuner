@@ -1,6 +1,6 @@
 import { useState, useEffect, useCallback, useRef } from 'react'
 import './App.css'
-import ChannelCard from './components/ChannelCard'
+import ChannelCarousel from './components/ChannelCarousel'
 import { useChannels, useNowPlaying } from './hooks'
 
 function App() {
@@ -33,10 +33,6 @@ function App() {
   const [contentVisible, setContentVisible] = useState(false)
   const audioRef = useRef<HTMLAudioElement | null>(null)
   const playTimeoutRef = useRef<number | null>(null)
-  const carouselRef = useRef<HTMLDivElement | null>(null)
-  const isDragging = useRef(false)
-  const startX = useRef(0)
-  const scrollLeft = useRef(0)
 
   // Splash screen animation sequence
   useEffect(() => {
@@ -192,17 +188,6 @@ function App() {
     }
   }, [nowPlaying])
 
-  // Scroll carousel to selected item
-  useEffect(() => {
-    if (!carouselRef.current || channels.length === 0) return
-    const carousel = carouselRef.current
-    const totalItems = channels.length
-    const maxScroll = carousel.scrollWidth - carousel.clientWidth
-    const progress = totalItems > 1 ? selectedIndex / (totalItems - 1) : 0
-    const targetScroll = progress * maxScroll
-    carousel.scrollTo({ left: targetScroll, behavior: 'smooth' })
-  }, [selectedIndex, channels.length])
-
   // Dismiss instructions
   const dismissInstructions = () => {
     setShowInstructions(false)
@@ -217,37 +202,6 @@ function App() {
     return parts.map((part, i) =>
       regex.test(part) ? <mark key={i} className="search-highlight">{part}</mark> : part
     )
-  }
-
-  // Drag handlers for carousel
-  const handleMouseDown = (e: React.MouseEvent) => {
-    if (!carouselRef.current) return
-    isDragging.current = true
-    startX.current = e.pageX - carouselRef.current.offsetLeft
-    scrollLeft.current = carouselRef.current.scrollLeft
-    carouselRef.current.style.cursor = 'grabbing'
-  }
-
-  const handleMouseMove = (e: React.MouseEvent) => {
-    if (!isDragging.current || !carouselRef.current) return
-    e.preventDefault()
-    const x = e.pageX - carouselRef.current.offsetLeft
-    const walk = (x - startX.current) * 1.5
-    carouselRef.current.scrollLeft = scrollLeft.current - walk
-  }
-
-  const handleMouseUp = () => {
-    isDragging.current = false
-    if (carouselRef.current) {
-      carouselRef.current.style.cursor = 'grab'
-    }
-  }
-
-  const handleMouseLeave = () => {
-    isDragging.current = false
-    if (carouselRef.current) {
-      carouselRef.current.style.cursor = 'grab'
-    }
   }
 
   return (
@@ -305,24 +259,12 @@ function App() {
       </div>
 
       {/* Channel Carousel */}
-      <div
-        className={`carousel ${contentVisible ? 'visible' : ''}`}
-        ref={carouselRef}
-        onMouseDown={handleMouseDown}
-        onMouseMove={handleMouseMove}
-        onMouseUp={handleMouseUp}
-        onMouseLeave={handleMouseLeave}
-      >
-        {channels.map((channel, index) => (
-          <ChannelCard
-            key={channel.id}
-            channel={channel}
-            index={index}
-            isSelected={index === selectedIndex}
-            onSelect={playChannel}
-          />
-        ))}
-      </div>
+      <ChannelCarousel
+        channels={channels}
+        selectedIndex={selectedIndex}
+        onSelectChannel={playChannel}
+        visible={contentVisible}
+      />
 
 
       {/* Station Picker Dropdown */}
