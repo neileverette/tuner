@@ -6,6 +6,8 @@ interface StationPickerProps {
   selectedIndex: number
   onSelectChannel: (index: number) => void
   onClose: () => void
+  isFavorite?: (channelId: string) => boolean
+  onToggleFavorite?: (channelId: string) => void
 }
 
 // Highlight search matches
@@ -29,7 +31,9 @@ function StationPicker({
   channels,
   selectedIndex,
   onSelectChannel,
-  onClose
+  onClose,
+  isFavorite,
+  onToggleFavorite
 }: StationPickerProps) {
   const [search, setSearch] = useState('')
   const [sourceFilter, setSourceFilter] = useState<'all' | 'somafm' | 'radioparadise'>('all')
@@ -115,12 +119,24 @@ function StationPicker({
                   <span className="station-item-meta">{highlightMatch(channel.description, search)}</span>
                   {channel.genre && <span className="station-item-genre">{highlightMatch(channel.genre, search)}</span>}
                 </div>
-                {channel.listeners != null && channel.listeners > 0 && (
-                  <div className="station-item-right">
-                    <span className="station-item-listeners-label">Listeners</span>
-                    <span className="station-item-listeners">{channel.listeners.toLocaleString()}</span>
-                  </div>
-                )}
+                <div className="station-item-right">
+                  {channel.listeners != null && channel.listeners > 0 && (
+                    <>
+                      <span className="station-item-listeners-label">Listeners</span>
+                      <span className="station-item-listeners">{channel.listeners.toLocaleString()}</span>
+                    </>
+                  )}
+                  <button
+                    className={`station-item-favorite ${isFavorite?.(channel.id) ? 'is-favorite' : ''}`}
+                    onClick={(e) => {
+                      e.stopPropagation()
+                      onToggleFavorite?.(channel.id)
+                    }}
+                    aria-label={isFavorite?.(channel.id) ? 'Remove from favorites' : 'Add to favorites'}
+                  >
+                    <span className="material-symbols-outlined">favorite</span>
+                  </button>
+                </div>
               </div>
             ))
           )}

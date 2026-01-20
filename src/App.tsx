@@ -138,6 +138,8 @@ function App() {
               setIsPlaying(true)
             })
             .catch(err => {
+              // AbortError is expected when switching channels quickly - ignore it
+              if (err.name === 'AbortError') return
               console.error('Playback error:', err)
               setIsPlaying(false)
               setStreamError('Failed to start playback')
@@ -304,6 +306,8 @@ function App() {
             setShowStationPicker(false)
           }}
           onClose={() => setShowStationPicker(false)}
+          isFavorite={isFavorite}
+          onToggleFavorite={toggleFavorite}
         />
       )}
 
