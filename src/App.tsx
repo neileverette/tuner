@@ -1,27 +1,20 @@
 import { useState, useEffect, useCallback, useRef } from 'react'
 import './App.css'
-
-interface Channel {
-  id: string
-  title: string
-  description: string
-  dj: string
-  genre: string
-  image: string
-  largeimage: string
-  xlimage: string
-  playlists: { url: string; format: string; quality: string }[]
-  lastPlaying: string
-  listeners: number
-}
+import ChannelCard from './components/ChannelCard'
+import { useChannels, useNowPlaying } from './hooks'
 
 function App() {
-  const [channels, setChannels] = useState<Channel[]>([])
+  const { channels, getStreamUrl } = useChannels()
   const [selectedIndex, setSelectedIndex] = useState(() => {
     const saved = localStorage.getItem('tuner-selected-index')
     return saved ? parseInt(saved, 10) : 0
   })
   const [isPlaying, setIsPlaying] = useState(false)
+
+  // Get selected channel for now-playing polling
+  const selectedChannel = channels[selectedIndex]
+  const selectedChannelId = selectedChannel?.id ?? null
+  const { nowPlaying } = useNowPlaying(selectedChannelId, { enabled: isPlaying })
   const [currentTrack, setCurrentTrack] = useState('')
   const [currentImage, setCurrentImage] = useState(() => {
     return localStorage.getItem('tuner-current-image') || ''
@@ -71,24 +64,16 @@ function App() {
     }
   }, [showSplash])
 
-  // Fetch channels from SomaFM
+  // Restore initial state from channels when loaded
   useEffect(() => {
-    fetch('https://api.somafm.com/channels.json')
-      .then(res => res.json())
-      .then(data => {
-        setChannels(data.channels)
-        // Restore last played channel's info or default to first station
-        const savedIndex = localStorage.getItem('tuner-selected-index')
-        const index = savedIndex ? parseInt(savedIndex, 10) : 0
-        if (data.channels[index]) {
-          setCurrentTrack(data.channels[index].lastPlaying || '')
-          if (!currentImage) {
-            setCurrentImage(data.channels[index].xlimage)
-          }
-        }
-      })
-      .catch(err => console.error('Failed to fetch channels:', err))
-  }, [])
+    if (channels.length === 0) return
+    const savedIndex = localStorage.getItem('tuner-selected-index')
+    const index = savedIndex ? parseInt(savedIndex, 10) : 0
+    const channel = channels[index] || channels[0]
+    if (channel && !currentImage) {
+      setCurrentImage(channel.image.large)
+    }
+  }, [channels, currentImage])
 
   // Play channel with debounced audio loading
   const playChannel = useCallback((index: number) => {
@@ -101,14 +86,14 @@ function App() {
       setTransitionDirection(direction)
       return index
     })
-    setCurrentTrack(channels[index].lastPlaying || '')
+    setCurrentTrack('')  // Will be populated by useNowPlaying
 
     // Save to localStorage
     localStorage.setItem('tuner-selected-index', index.toString())
-    localStorage.setItem('tuner-current-image', channels[index].xlimage)
+    localStorage.setItem('tuner-current-image', channels[index].image.large)
 
     // Trigger image transition
-    const newImage = channels[index].xlimage
+    const newImage = channels[index].image.large
     setCurrentImage((prevImage) => {
       if (newImage !== prevImage) {
         setPrevImage(prevImage)
@@ -126,7 +111,7 @@ function App() {
     // Debounce the actual audio loading - wait for user to stop pressing keys
     playTimeoutRef.current = window.setTimeout(() => {
       if (audioRef.current) {
-        const proxyUrl = `/api/stream/${channels[index].id}`
+        const proxyUrl = getStreamUrl(channels[index])
         console.log('Playing:', proxyUrl)
         audioRef.current.src = proxyUrl
         audioRef.current.volume = 1.0
@@ -144,7 +129,7 @@ function App() {
         }
       }
     }, 300)
-  }, [channels])
+  }, [channels, getStreamUrl])
 
   // Control functions
   const handlePlayPause = useCallback(() => {
@@ -200,25 +185,12 @@ function App() {
     return () => window.removeEventListener('keydown', handleKeyDown)
   }, [handleChannelPrev, handleChannelNext, handlePlayPause])
 
-  // Poll for current track info
+  // Sync current track from now-playing hook
   useEffect(() => {
-    const interval = setInterval(() => {
-      if (channels[selectedIndex]) {
-        fetch('https://api.somafm.com/channels.json')
-          .then(res => res.json())
-          .then(data => {
-            const channel = data.channels.find((c: Channel) => c.id === channels[selectedIndex].id)
-            if (channel) {
-              setCurrentTrack(channel.lastPlaying || '')
-            }
-          })
-          .catch(() => {})
-      }
-    }, 10000)
-    return () => clearInterval(interval)
-  }, [channels, selectedIndex])
-
-  const currentChannel = channels[selectedIndex]
+    if (nowPlaying?.track) {
+      setCurrentTrack(nowPlaying.track)
+    }
+  }, [nowPlaying])
 
   // Scroll carousel to selected item
   useEffect(() => {
@@ -309,7 +281,7 @@ function App() {
         {currentImage && (
           <img
             src={currentImage}
-            alt={currentChannel?.title || 'Channel art'}
+            alt={selectedChannel?.title || 'Channel art'}
             className={`hero-image hero-image-current ${isTransitioning ? `transitioning ${transitionDirection}` : ''}`}
           />
         )}
@@ -342,14 +314,13 @@ function App() {
         onMouseLeave={handleMouseLeave}
       >
         {channels.map((channel, index) => (
-          <div
+          <ChannelCard
             key={channel.id}
-            className={`carousel-item ${index === selectedIndex ? 'selected' : ''}`}
-            onClick={() => playChannel(index)}
-          >
-            <img src={channel.largeimage} alt={channel.title} />
-            <span className="carousel-item-title">{channel.title}</span>
-          </div>
+            channel={channel}
+            index={index}
+            isSelected={index === selectedIndex}
+            onSelect={playChannel}
+          />
         ))}
       </div>
 
@@ -401,7 +372,7 @@ function App() {
                       <span className="station-item-meta">{highlightMatch(channel.description, stationSearch)}</span>
                       {channel.genre && <span className="station-item-genre">{highlightMatch(channel.genre, stationSearch)}</span>}
                     </div>
-                    {channel.listeners > 0 && (
+                    {channel.listeners != null && channel.listeners > 0 && (
                       <div className="station-item-right">
                         <span className="station-item-listeners-label">Listeners</span>
                         <span className="station-item-listeners">{channel.listeners.toLocaleString()}</span>
@@ -418,11 +389,11 @@ function App() {
       <div className={`controls ${contentVisible ? 'visible' : ''}`}>
         <div className="track-info" onClick={() => setShowStationPicker(!showStationPicker)}>
           <span className="playlist-name">
-            {currentChannel?.title || 'Select Station'}
+            {selectedChannel?.title || 'Select Station'}
             <span className="material-symbols-outlined menu-icon">menu_open</span>
           </span>
           <span className="song-name">{currentTrack || 'No track info'}</span>
-          <span className="artist">{currentChannel?.genre || ''}</span>
+          <span className="artist">{selectedChannel?.genre || ''}</span>
         </div>
 
 
@@ -441,7 +412,7 @@ function App() {
         </div>
 
         <div className="listeners-info">
-          <span>{currentChannel?.listeners || 0} listeners</span>
+          <span>{selectedChannel?.listeners ?? 0} listeners</span>
         </div>
       </div>
     </div>
