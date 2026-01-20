@@ -6,22 +6,50 @@ import https from 'https';
 // Import compiled TypeScript config (ESM modules)
 import { aggregateByGenre, aggregateBySource } from '../dist/config/aggregation.js';
 
+/**
+ * Tuner Proxy Server
+ *
+ * Proxies audio streams and API calls to bypass CORS restrictions.
+ *
+ * ROUTES:
+ *
+ * SomaFM:
+ *   GET /api/stream/:channelId
+ *   - Proxies SomaFM MP3 streams
+ *   - Example: /api/stream/groovesalad
+ *
+ * Radio Paradise:
+ *   GET /api/stream/rp/:channel/:quality
+ *   - Proxies RP audio streams with quality selection
+ *   - channel: main, mellow, rock, global
+ *   - quality: flac, aac-320, mp3-128
+ *   - Example: /api/stream/rp/main/flac
+ *
+ *   GET /api/rp/nowplaying/:chan
+ *   - Proxies RP now-playing API
+ *   - chan: 0 (main), 1 (mellow), 2 (rock), 3 (global)
+ */
+
 const app = express();
 app.use(cors());
 app.use(express.json());
 
-// Radio Paradise stream URL mappings
-const RP_STREAM_PATHS = {
-  'rp-main': { aac: 'aac-320', flac: 'flac', mp3: 'mp3-128' },
-  'rp-mellow': { aac: 'mellow-320', flac: 'mellow-flac', mp3: 'mellow-128' },
-  'rp-rock': { aac: 'rock-320', flac: 'rock-flac', mp3: 'rock-128' },
-  'rp-global': { aac: 'global-320', flac: 'global-flac', mp3: 'global-128' }
+// Radio Paradise channel and quality mappings
+// Note: Main uses different URL patterns than other channels
+// Main: /aac-320, /flac, /mp3-128
+// Others: /mellow-320, /mellow-flac, /mellow-128, etc.
+const RP_CHANNELS = {
+  main:   { prefix: '' },
+  mellow: { prefix: 'mellow-' },
+  rock:   { prefix: 'rock-' },
+  global: { prefix: 'global-' }
 };
 
-const RP_CONTENT_TYPES = {
-  aac: 'audio/aac',
-  flac: 'audio/flac',
-  mp3: 'audio/mpeg'
+// Quality suffixes differ for main vs other channels
+const RP_QUALITIES = {
+  'flac':    { main: 'flac',    other: 'flac',  contentType: 'audio/flac' },
+  'aac-320': { main: 'aac-320', other: '320',   contentType: 'audio/aac' },
+  'mp3-128': { main: 'mp3-128', other: '128',   contentType: 'audio/mpeg' }
 };
 
 /**
@@ -52,19 +80,21 @@ app.get('/api/channels', (req, res) => {
 });
 
 // Proxy Radio Paradise streams
-app.get('/api/rp/stream/:channelId/:format', (req, res) => {
-  const { channelId, format } = req.params;
+app.get('/api/stream/rp/:channel/:quality', (req, res) => {
+  const { channel, quality } = req.params;
 
-  // Validate channel and format
-  if (!RP_STREAM_PATHS[channelId]) {
-    return res.status(400).json({ error: 'Invalid channel. Valid: rp-main, rp-mellow, rp-rock, rp-global' });
+  // Validate channel and quality
+  if (!RP_CHANNELS[channel]) {
+    return res.status(400).json({ error: 'Invalid channel. Valid: main, mellow, rock, global' });
   }
-  if (!RP_CONTENT_TYPES[format]) {
-    return res.status(400).json({ error: 'Invalid format. Valid: aac, flac, mp3' });
+  if (!RP_QUALITIES[quality]) {
+    return res.status(400).json({ error: 'Invalid quality. Valid: flac, aac-320, mp3-128' });
   }
 
-  const streamPath = RP_STREAM_PATHS[channelId][format];
-  const streamUrl = `http://stream.radioparadise.com/${streamPath}`;
+  // Build URL: main uses different suffix pattern than other channels
+  const isMain = channel === 'main';
+  const qualitySuffix = isMain ? RP_QUALITIES[quality].main : RP_QUALITIES[quality].other;
+  const streamUrl = `http://stream.radioparadise.com/${RP_CHANNELS[channel].prefix}${qualitySuffix}`;
 
   console.log('Proxying Radio Paradise stream:', streamUrl);
 
@@ -76,7 +106,7 @@ app.get('/api/rp/stream/:channelId/:format', (req, res) => {
 
   // Use http (not https) for Radio Paradise streams
   http.get(streamUrl, options, (streamRes) => {
-    res.setHeader('Content-Type', RP_CONTENT_TYPES[format]);
+    res.setHeader('Content-Type', RP_QUALITIES[quality].contentType);
     res.setHeader('Cache-Control', 'no-cache');
     streamRes.pipe(res);
   }).on('error', (err) => {
@@ -86,7 +116,7 @@ app.get('/api/rp/stream/:channelId/:format', (req, res) => {
 });
 
 // Proxy Radio Paradise now-playing API
-app.get('/api/rp/now-playing/:chan', (req, res) => {
+app.get('/api/rp/nowplaying/:chan', (req, res) => {
   const chan = parseInt(req.params.chan, 10);
 
   // Validate channel number (0-3)
@@ -109,6 +139,7 @@ app.get('/api/rp/now-playing/:chan', (req, res) => {
     apiRes.on('data', (chunk) => { data += chunk; });
     apiRes.on('end', () => {
       res.setHeader('Content-Type', 'application/json');
+      res.setHeader('Cache-Control', 'no-store');
       res.send(data);
     });
   }).on('error', (err) => {
