@@ -84,9 +84,10 @@ export class RadioParadiseAdapter implements SourceAdapter {
   }
 
   getStreamUrl(channel: Channel, preferredFormat?: 'mp3' | 'aac' | 'flac'): string {
+    // Default to MP3 for browser compatibility (AAC/ADTS not widely supported)
     const quality = preferredFormat === 'flac' ? 'flac'
-      : preferredFormat === 'mp3' ? 'mp3-128'
-      : 'aac-320';
+      : preferredFormat === 'aac' ? 'aac-320'
+      : 'mp3-128';
     return `${this.config.proxyBaseUrl}/${channel.sourceId}/${quality}`;
   }
 
