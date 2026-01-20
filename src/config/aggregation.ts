@@ -4,7 +4,7 @@
  * Transforms source registry data into API response shapes.
  */
 
-import { GENRE_LIST, getGenre } from './genres.js';
+import { GENRE_LIST } from './genres.js';
 import type { GenreId } from './genres.js';
 import { SOURCES, getAllChannelDefinitions, getAllChannelMappings } from './sources/index.js';
 import type { ChannelDefinitionWithSource, ChannelMappingWithSource } from './sources/index.js';
