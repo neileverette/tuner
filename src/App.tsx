@@ -2,6 +2,7 @@ import { useState, useEffect, useCallback, useRef } from 'react'
 import './App.css'
 import ChannelCarousel from './components/ChannelCarousel'
 import PlayerControls from './components/PlayerControls'
+import StationPicker from './components/StationPicker'
 import { useChannels, useNowPlaying } from './hooks'
 
 function App() {
@@ -24,8 +25,6 @@ function App() {
   const [isTransitioning, setIsTransitioning] = useState(false)
   const [transitionDirection, setTransitionDirection] = useState<'left' | 'right'>('right')
   const [showStationPicker, setShowStationPicker] = useState(false)
-  const [stationSearch, setStationSearch] = useState('')
-  const [sourceFilter, setSourceFilter] = useState<'all' | 'somafm' | 'radioparadise'>('all')
   const [streamError, setStreamError] = useState<string | null>(null)
   const [showInstructions, setShowInstructions] = useState(() => {
     return localStorage.getItem('tuner-instructions-dismissed') !== 'true'
@@ -211,23 +210,6 @@ function App() {
     localStorage.setItem('tuner-instructions-dismissed', 'true')
   }
 
-  // Highlight search matches
-  const highlightMatch = (text: string, search: string) => {
-    if (!search.trim()) return text
-    const regex = new RegExp(`(${search.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')})`, 'gi')
-    const parts = text.split(regex)
-    return parts.map((part, i) =>
-      regex.test(part) ? <mark key={i} className="search-highlight">{part}</mark> : part
-    )
-  }
-
-  // Get source label from channel ID
-  const getSourceLabel = (id: string): string | null => {
-    if (id.startsWith('somafm:')) return 'SomaFM'
-    if (id.startsWith('rp:')) return 'Radio Paradise'
-    return null
-  }
-
   return (
     <div className="tuner">
       {/* Audio element */}
@@ -320,106 +302,15 @@ function App() {
 
       {/* Station Picker Dropdown */}
       {showStationPicker && (
-        <div className="station-picker-overlay" onClick={() => setShowStationPicker(false)}>
-          <div className="station-picker" onClick={(e) => e.stopPropagation()}>
-            <div className="station-picker-header">
-              <div className="station-picker-search">
-                <svg viewBox="0 0 24 24" fill="currentColor">
-                  <path d="M15.5 14h-.79l-.28-.27C15.41 12.59 16 11.11 16 9.5 16 5.91 13.09 3 9.5 3S3 5.91 3 9.5 5.91 16 9.5 16c1.61 0 3.09-.59 4.23-1.57l.27.28v.79l5 4.99L20.49 19l-4.99-5zm-6 0C7.01 14 5 11.99 5 9.5S7.01 5 9.5 5 14 7.01 14 9.5 11.99 14 9.5 14z" />
-                </svg>
-                <input
-                  type="text"
-                  placeholder="Search stations..."
-                  value={stationSearch}
-                  onChange={(e) => setStationSearch(e.target.value)}
-                  autoFocus
-                />
-              </div>
-              <button className="station-picker-close" onClick={() => setShowStationPicker(false)}>
-                <svg viewBox="0 0 24 24" fill="currentColor">
-                  <path d="M19 6.41L17.59 5 12 10.59 6.41 5 5 6.41 10.59 12 5 17.59 6.41 19 12 13.41 17.59 19 19 17.59 13.41 12z" />
-                </svg>
-              </button>
-            </div>
-            <div className="station-picker-filters">
-              <button
-                className={`filter-chip ${sourceFilter === 'all' ? 'active' : ''}`}
-                onClick={() => setSourceFilter('all')}
-              >
-                All
-              </button>
-              <button
-                className={`filter-chip filter-somafm ${sourceFilter === 'somafm' ? 'active' : ''}`}
-                onClick={() => setSourceFilter('somafm')}
-              >
-                SomaFM
-              </button>
-              <button
-                className={`filter-chip filter-rp ${sourceFilter === 'radioparadise' ? 'active' : ''}`}
-                onClick={() => setSourceFilter('radioparadise')}
-              >
-                Radio Paradise
-              </button>
-            </div>
-            <div className="station-picker-list">
-              {(() => {
-                const filteredChannels = channels
-                  .map((channel, index) => ({ channel, index }))
-                  .filter(({ channel }) => {
-                    // Source filter
-                    if (sourceFilter === 'somafm' && !channel.id.startsWith('somafm:')) return false
-                    if (sourceFilter === 'radioparadise' && !channel.id.startsWith('rp:')) return false
-                    // Text search filter
-                    if (stationSearch === '') return true
-                    return (
-                      channel.title.toLowerCase().includes(stationSearch.toLowerCase()) ||
-                      channel.description.toLowerCase().includes(stationSearch.toLowerCase()) ||
-                      channel.genre.toLowerCase().includes(stationSearch.toLowerCase())
-                    )
-                  })
-
-                if (filteredChannels.length === 0) {
-                  return (
-                    <div className="station-picker-empty">
-                      No matching stations
-                    </div>
-                  )
-                }
-
-                return filteredChannels.map(({ channel, index }) => (
-                  <div
-                    key={channel.id}
-                    className={`station-item ${index === selectedIndex ? 'selected' : ''}`}
-                    onClick={() => {
-                      playChannel(index)
-                      setShowStationPicker(false)
-                      setStationSearch('')
-                    }}
-                  >
-                    <div className="station-item-left">
-                      <div className="station-item-header">
-                        <span className="station-item-name">{highlightMatch(channel.title, stationSearch)}</span>
-                        {getSourceLabel(channel.id) && (
-                          <span className={`station-item-source ${channel.id.startsWith('rp:') ? 'source-rp' : 'source-somafm'}`}>
-                            {getSourceLabel(channel.id)}
-                          </span>
-                        )}
-                      </div>
-                      <span className="station-item-meta">{highlightMatch(channel.description, stationSearch)}</span>
-                      {channel.genre && <span className="station-item-genre">{highlightMatch(channel.genre, stationSearch)}</span>}
-                    </div>
-                    {channel.listeners != null && channel.listeners > 0 && (
-                      <div className="station-item-right">
-                        <span className="station-item-listeners-label">Listeners</span>
-                        <span className="station-item-listeners">{channel.listeners.toLocaleString()}</span>
-                      </div>
-                    )}
-                  </div>
-                ))
-              })()}
-            </div>
-          </div>
-        </div>
+        <StationPicker
+          channels={channels}
+          selectedIndex={selectedIndex}
+          onSelectChannel={(index) => {
+            playChannel(index)
+            setShowStationPicker(false)
+          }}
+          onClose={() => setShowStationPicker(false)}
+        />
       )}
 
       {/* Bottom Controls */}
