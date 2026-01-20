@@ -11,11 +11,13 @@ export interface UseNowPlayingResult {
 
 // Poll intervals per source (respecting rate limits)
 const POLL_INTERVALS: Record<SourceType, number> = {
+  kexp: 30000,          // 30 seconds
   somafm: 10000,        // 10 seconds
   radioparadise: 30000, // 30 seconds - API rate limit
 };
 
 function getSourceFromChannelId(channelId: string): SourceType | null {
+  if (channelId.startsWith('kexp:')) return 'kexp';
   if (channelId.startsWith('somafm:')) return 'somafm';
   if (channelId.startsWith('rp:')) return 'radioparadise';
   return null;

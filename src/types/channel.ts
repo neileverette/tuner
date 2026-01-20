@@ -1,7 +1,7 @@
 /**
  * Source type identifier for multi-source support
  */
-export type SourceType = 'somafm' | 'radioparadise';
+export type SourceType = 'kexp' | 'somafm' | 'radioparadise';
 
 /**
  * Stream quality option

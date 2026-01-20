@@ -94,6 +94,65 @@ app.get('/api/rp/nowplaying/:chan', (req, res) => {
   });
 });
 
+// KEXP stream qualities
+const KEXP_QUALITIES = {
+  '160': { url: 'https://kexp.streamguys1.com/kexp160.aac', contentType: 'audio/aac' },
+  '64': { url: 'https://kexp.streamguys1.com/kexp64.aac', contentType: 'audio/aac' }
+};
+
+// Proxy KEXP streams
+app.get('/api/stream/kexp/:quality', (req, res) => {
+  const { quality } = req.params;
+
+  if (!KEXP_QUALITIES[quality]) {
+    return res.status(400).json({ error: 'Invalid quality' });
+  }
+
+  const streamUrl = KEXP_QUALITIES[quality].url;
+  console.log('Proxying KEXP stream:', streamUrl);
+
+  const options = {
+    headers: {
+      'User-Agent': 'Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36'
+    }
+  };
+
+  https.get(streamUrl, options, (streamRes) => {
+    res.setHeader('Content-Type', KEXP_QUALITIES[quality].contentType);
+    res.setHeader('Cache-Control', 'no-cache');
+    streamRes.pipe(res);
+  }).on('error', (err) => {
+    console.error('KEXP stream error:', err);
+    res.status(500).json({ error: 'Stream error' });
+  });
+});
+
+// Proxy KEXP now-playing API
+app.get('/api/kexp/nowplaying', (req, res) => {
+  const apiUrl = 'https://api.kexp.org/v2/plays/?limit=1';
+
+  console.log('Proxying KEXP now-playing:', apiUrl);
+
+  const options = {
+    headers: {
+      'User-Agent': 'Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36'
+    }
+  };
+
+  https.get(apiUrl, options, (apiRes) => {
+    let data = '';
+    apiRes.on('data', (chunk) => { data += chunk; });
+    apiRes.on('end', () => {
+      res.setHeader('Content-Type', 'application/json');
+      res.setHeader('Cache-Control', 'no-store');
+      res.send(data);
+    });
+  }).on('error', (err) => {
+    console.error('KEXP API error:', err);
+    res.status(500).json({ error: 'API error' });
+  });
+});
+
 // Proxy SomaFM streams to avoid CORS/403 issues
 app.get('/api/stream/:channelId', (req, res) => {
   const { channelId } = req.params;

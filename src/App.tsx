@@ -273,8 +273,12 @@ function App() {
       )}
 
       {/* Station Count - just above carousel */}
-      <div className={`station-count ${contentVisible ? 'visible' : ''}`}>
+      <div
+        className={`station-count ${contentVisible ? 'visible' : ''}`}
+        onClick={() => setShowStationPicker(true)}
+      >
         {isLoading ? 'Loading stations...' : channels.length > 0 ? `${channels.length} stations` : 'No stations available'}
+        <span className="material-symbols-outlined menu-icon">menu_open</span>
       </div>
 
       {/* Channel Carousel */}

@@ -22,7 +22,6 @@ function PlayerControls({
       <div className="track-info" onClick={onOpenStationPicker}>
         <span className="playlist-name">
           {currentChannel?.title || 'Select Station'}
-          <span className="material-symbols-outlined menu-icon">menu_open</span>
         </span>
         <span className="song-name">{currentTrack || 'No track info'}</span>
         <span className="artist">{currentChannel?.genre || ''}</span>
