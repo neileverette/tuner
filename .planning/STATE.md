@@ -5,14 +5,14 @@
 See: .planning/PROJECT.md (Genre Organizer)
 
 **Core value:** Multi-source radio aggregator with unified genre classification
-**Current focus:** Phase 4 Complete - Backend API ready, Phase 5 or 6 next
+**Current focus:** Phase 5 in progress - 05-01 complete, 05-03 ready
 
 ## Current Position
 
-Phase: 4 of 8 (Backend API Organization) - COMPLETE
-Plan: 04-01-PLAN.md executed
-Status: /api/channels endpoint operational with genre and source views
-Last activity: 2026-01-19 - Completed 04-01-PLAN.md
+Phase: 5 of 8 (UI Refactoring) - IN PROGRESS
+Plan: 05-01-PLAN.md complete, 05-03-PLAN.md ready to execute
+Status: Carousel components extracted; App.tsx reduced from 452 to 364 lines
+Last activity: 2026-01-19 - Completed 05-01-PLAN.md
 
 Progress: [#####     ] 50%
 
@@ -24,7 +24,7 @@ Progress: [#####     ] 50%
 | 2 | Source Registry System | **Complete** | Phase 1 |
 | 3 | Radio Paradise Integration | **Complete** | Phase 2 |
 | 4 | Backend API Organization | **Complete** | Phase 3 |
-| 5 | UI Refactoring | Ready (parallel) | - |
+| 5 | UI Refactoring | **In Progress** (1/3 plans) | - |
 | 6 | Genre Panel Updates | Ready | Phase 4, 5 |
 | 7 | View Mode Toggle | Not Started | Phase 6 |
 | 8 | Genre Filtering & Persistence | Not Started | Phase 7 |
@@ -32,7 +32,7 @@ Progress: [#####     ] 50%
 ## Parallel Workstreams
 
 **Stream A (Data/Backend):** Phase 1 (DONE) -> 2 (DONE) -> 3 (DONE) -> 4 (DONE)
-**Stream B (Frontend):** Phase 5 (Ready to start)
+**Stream B (Frontend):** Phase 5 (IN PROGRESS - 05-01 complete)
 
 Both converge at Phase 6 (now unblocked on backend side).
 
@@ -68,6 +68,11 @@ Both converge at Phase 6 (now unblocked on backend side).
   - src/config/aggregation.ts (aggregateByGenre, aggregateBySource)
   - tsconfig.server.json (ESM build config)
   - GET /api/channels endpoint with ?view=genre|source
+- Phase 5 plan 1 (05-01-PLAN.md)
+- Phase 5 plan 1 implementation (05-01-SUMMARY.md)
+  - src/components/ChannelCard.tsx (carousel item component)
+  - src/components/ChannelCarousel.tsx (carousel with drag-to-scroll)
+  - App.tsx reduced by 88 lines (452 -> 364)
 
 ## Key Artifacts
 
@@ -78,6 +83,8 @@ Both converge at Phase 6 (now unblocked on backend side).
 | src/config/api-types.ts | API response types (ApiChannel, GenreGroup, SourceGroup) |
 | src/config/aggregation.ts | Channel aggregation (aggregateByGenre, aggregateBySource) |
 | src/config/sources/index.ts | Source registry (SOURCES, getAllChannelMappings, getAllChannelDefinitions) |
+| src/components/ChannelCard.tsx | Individual channel thumbnail component |
+| src/components/ChannelCarousel.tsx | Carousel container with drag-scroll |
 | server/index.js | Express backend with proxies and /api/channels endpoint |
 | tsconfig.server.json | Build config for server-consumable ESM modules |
 
@@ -94,14 +101,23 @@ Both converge at Phase 6 (now unblocked on backend side).
 ## Session Continuity
 
 Last session: 2026-01-19
-Completed: Phase 4 plan executed
-Resume: Create Phase 5 plan (UI Refactoring) or Phase 6 plan (Genre Panel Updates)
+Completed: Phase 5 plan 1 (carousel component extraction)
+Resume: Execute 05-03-PLAN.md for remaining component extractions
 
 ## Next Steps
 
-1. **Phase 5:** Create plan for UI Refactoring (component extraction, TypeScript migration)
+1. **Phase 5:** Execute 05-03-PLAN.md (StationPicker, PlayerControls, HeroArtwork, SplashScreen, Instructions extraction)
 2. **Phase 6:** Create plan for Genre Panel Updates (consume /api/channels, replace hardcoded data)
 3. Both phases can now proceed since backend API is ready
+
+## Phase 5 Plan Summary
+
+Three plans exist for Phase 5:
+- **05-01-PLAN.md**: ChannelCard/ChannelCarousel extraction - **COMPLETE**
+- **05-02-PLAN.md**: PlayerControls/StationPicker extraction (superseded by 05-03)
+- **05-03-PLAN.md**: Complete extraction (StationPicker, PlayerControls, HeroArtwork, SplashScreen, Instructions) - READY
+
+Recommended: Execute 05-03-PLAN.md which covers all remaining extractions comprehensively.
 
 ---
 *Updated: 2026-01-19*
