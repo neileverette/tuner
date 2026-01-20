@@ -7,6 +7,7 @@ interface ChannelCarouselProps {
   selectedIndex: number
   onSelectChannel: (index: number) => void
   visible: boolean
+  getOverrideImage?: (channelId: string) => string | null
 }
 
 function ChannelCarousel({

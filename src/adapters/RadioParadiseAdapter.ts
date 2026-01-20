@@ -52,7 +52,8 @@ export class RadioParadiseAdapter implements SourceAdapter {
     if (chanParam === null) return null;
 
     try {
-      const url = `${this.config.apiBaseUrl}/api/get_block?bitrate=4&info=true&chan=${chanParam}`;
+      // Use proxy to avoid CORS issues
+      const url = `/api/rp/nowplaying/${chanParam}`;
       const response = await fetch(url);
       if (!response.ok) return null;
 
@@ -111,9 +112,9 @@ export class RadioParadiseAdapter implements SourceAdapter {
       genre: def.genre,
       dj: null,
       image: {
-        small: `https://img.radioparadise.com/covers/l/${def.id}.jpg`,
-        medium: `https://img.radioparadise.com/covers/m/${def.id}.jpg`,
-        large: `https://img.radioparadise.com/covers/s/${def.id}.jpg`,
+        small: `https://img.radioparadise.com/channels/0/${def.chan}/banner_500x280/0.jpg`,
+        medium: `https://img.radioparadise.com/channels/0/${def.chan}/banner_500x280/0.jpg`,
+        large: `https://img.radioparadise.com/channels/0/${def.chan}/banner_500x280/0.jpg`,
       },
       streams: this.getAvailableStreams(def),
       nowPlaying: null,

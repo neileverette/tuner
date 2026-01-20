@@ -5,6 +5,7 @@ interface ChannelCardProps {
   index: number
   isSelected: boolean
   onSelect: (index: number) => void
+  overrideImage?: string | null
 }
 
 function getSourceFromId(id: string): 'somafm' | 'rp' | null {
@@ -13,8 +14,16 @@ function getSourceFromId(id: string): 'somafm' | 'rp' | null {
   return null
 }
 
-function ChannelCard({ channel, index, isSelected, onSelect }: ChannelCardProps) {
+// Radio Paradise logo as fallback when no album art available
+const RP_FALLBACK_IMAGE = 'https://img.radioparadise.com/logos/rp_logo_128.png'
+
+function ChannelCard({ channel, index, isSelected, onSelect, overrideImage }: ChannelCardProps) {
   const source = getSourceFromId(channel.id)
+
+  // Use override image if provided, otherwise channel default, with RP fallback
+  const imageUrl = overrideImage
+    ?? channel.image.medium
+    ?? (source === 'rp' ? RP_FALLBACK_IMAGE : '')
 
   return (
     <div
@@ -22,7 +31,7 @@ function ChannelCard({ channel, index, isSelected, onSelect }: ChannelCardProps)
       onClick={() => onSelect(index)}
     >
       <div className="carousel-item-image-wrapper">
-        <img src={channel.image.medium} alt={channel.title} />
+        <img src={imageUrl} alt={channel.title} />
         {source && <span className={`source-badge source-${source}`}>{source === 'rp' ? 'RP' : 'SF'}</span>}
       </div>
       <span className="carousel-item-title">{channel.title}</span>
