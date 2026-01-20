@@ -1,122 +1,221 @@
 # Tuner
 
-A premium web-based internet radio player supporting multiple streaming sources, built with React, TypeScript, and Vite.
+A modern internet radio player that aggregates streams from multiple sources into a unified, beautiful interface.
 
-**Tuner** provides a unified listening experience across different internet radio services, starting with [SomaFM](https://somafm.com/) (~30 channels) and [Radio Paradise](https://radioparadise.com/) (4 mixes).
+![React](https://img.shields.io/badge/React-19.2-blue) ![TypeScript](https://img.shields.io/badge/TypeScript-5.8-blue) ![Vite](https://img.shields.io/badge/Vite-7.3-purple)
 
 ## Features
 
-- **Multi-Source Support**: Stream from SomaFM and Radio Paradise in one unified interface
-- **30+ Channels**: Access all SomaFM channels plus Radio Paradise's Main, Mellow, Rock, and Global mixes
-- **Real-time Metadata**: Displays current artist, song, and cover art per source
-- **Audio Quality Options**: FLAC, AAC, and MP3 support (quality options vary by source)
-- **Source Filtering**: Filter channels by source in the station picker
-- **Keyboard Navigation**: Arrow keys to browse, spacebar to play/pause
-- **Modern UI**: Clean carousel interface with crossfade transitions
+- **Multi-Source Streaming** — 50+ channels from SomaFM, Radio Paradise, and KEXP
+- **Real-Time Now Playing** — Track info with album artwork from each source
+- **Favorites** — Per-device favorites stored in localStorage
+- **Keyboard Navigation** — Arrow keys to browse, spacebar to play/pause
+- **Beautiful UI** — Full-screen album art with smooth crossfade transitions
+- **Stream Proxy** — CORS-bypassing backend for reliable playback
 
 ## Architecture
 
-Tuner uses an adapter pattern to normalize different streaming services into a unified interface:
+```
+┌─────────────────────────────────────────────────────────────┐
+│                     React Frontend                           │
+│  App.tsx → Hooks → Adapters → Registry → Components         │
+└────────────────────────┬────────────────────────────────────┘
+                         │ /api/*
+                         ↓
+┌─────────────────────────────────────────────────────────────┐
+│                  Express.js Backend                          │
+│         Stream Proxying + API Proxying (CORS bypass)         │
+└─────────────────────────────────────────────────────────────┘
+                         │
+        ┌────────────────┼────────────────┐
+        ↓                ↓                ↓
+   SomaFM API    Radio Paradise      KEXP API
+   49 channels      4 channels       1 channel
+```
+
+## Adapter Pattern
+
+Each music source implements a common `SourceAdapter` interface, making it easy to add new sources:
+
+```typescript
+interface SourceAdapter {
+  readonly source: SourceType;
+  fetchChannels(): Promise<Channel[]>;
+  fetchNowPlaying(channelId: string): Promise<NowPlaying | null>;
+  getStreamUrl(channel: Channel): string;
+}
+```
+
+### Source Adapters
+
+| Adapter | Channels | Stream Format | Now Playing |
+|---------|----------|---------------|-------------|
+| **SomaFMAdapter** | 49 | MP3 128kbps | Artist - Title from API |
+| **RadioParadiseAdapter** | 4 | FLAC/AAC/MP3 | Full metadata + album art |
+| **KEXPAdapter** | 1 | AAC 160kbps | Track info from plays API |
+
+## Source Registry
+
+The `SourceRegistry` orchestrates all adapters with error isolation:
+
+```typescript
+class SourceRegistry {
+  register(adapter: SourceAdapter): void
+  getAllChannels(): Promise<Channel[]>      // Parallel fetch via Promise.allSettled
+  getStreamUrl(channel: Channel): string    // Delegates to correct adapter
+  fetchNowPlaying(channelId: string): Promise<NowPlaying | null>
+}
+```
+
+**Key Features:**
+- `Promise.allSettled()` ensures one failing source doesn't block others
+- In-memory channel cache for instant lookups
+- Channel ID format: `source:channelId` (e.g., `somafm:groovesalad`, `rp:main`, `kexp:live`)
+
+## Proxy Route Table
+
+All streams and APIs are proxied through the Express backend to bypass CORS:
+
+| Route | Purpose | Upstream |
+|-------|---------|----------|
+| `GET /api/stream/:channelId` | SomaFM streams | `ice1.somafm.com` |
+| `GET /api/stream/rp/:channel/:quality` | Radio Paradise streams | `stream.radioparadise.com` |
+| `GET /api/stream/kexp/:quality` | KEXP streams | `kexp.streamguys1.com` |
+| `GET /api/rp/nowplaying/:chan` | Radio Paradise now-playing | `api.radioparadise.com` |
+| `GET /api/kexp/nowplaying` | KEXP now-playing | `api.kexp.org` |
+
+## React Hooks
+
+| Hook | Purpose |
+|------|---------|
+| `useChannels()` | Fetches all channels from registry |
+| `useNowPlaying(channelId)` | Polls for current track info |
+| `useFavorites()` | Manages favorites in localStorage |
+| `useRadioParadiseArt()` | Special handler for RP album art |
+
+## Project Structure
 
 ```
-┌─────────────────────────────────────────────────────┐
-│                    React App                         │
-│  useChannels() ──► SourceRegistry ──► Adapters      │
-└─────────────────────────────────────────────────────┘
-                           │
-              ┌────────────┴────────────┐
-              ▼                         ▼
-      ┌──────────────┐          ┌──────────────┐
-      │ SomaFMAdapter │          │  RPAdapter   │
-      │  ~30 channels │          │  4 channels  │
-      │  10s polling  │          │  30s polling │
-      └──────────────┘          └──────────────┘
+src/
+├── adapters/               # Source implementations
+│   ├── SomaFMAdapter.ts
+│   ├── RadioParadiseAdapter.ts
+│   └── KEXPAdapter.ts
+├── services/
+│   └── SourceRegistry.ts   # Adapter orchestration
+├── hooks/
+│   ├── useChannels.ts
+│   ├── useNowPlaying.ts
+│   ├── useFavorites.ts
+│   └── useRadioParadiseArt.ts
+├── components/
+│   ├── ChannelCarousel.tsx
+│   ├── ChannelCard.tsx
+│   ├── PlayerControls.tsx
+│   ├── StationPicker.tsx
+│   ├── HeroArtwork.tsx
+│   └── SplashScreen.tsx
+├── config/
+│   ├── genres.ts
+│   └── sources/
+│       ├── somafm.ts
+│       └── radio-paradise.ts
+├── types/
+│   ├── adapter.ts
+│   └── channel.ts
+└── App.tsx
+
+server/
+├── index.js                # Development server
+└── production.js           # Production server
 ```
-
-### Key Components
-
-- **Adapters** (`src/adapters/`): Source-specific API integration
-- **SourceRegistry** (`src/services/`): Orchestrates multiple adapters
-- **Hooks** (`src/hooks/`): React hooks for channel data and now-playing
-- **Types** (`src/types/`): Shared interfaces (Channel, NowPlaying, SourceAdapter)
-- **Server Proxy** (`server/`): CORS proxy for streaming and API calls
-
-## Tech Stack
-
-- **Framework**: [React](https://react.dev/)
-- **Language**: [TypeScript](https://www.typescriptlang.org/)
-- **Build Tool**: [Vite](https://vitejs.dev/)
-- **Testing**: [Vitest](https://vitest.dev/)
-- **Styling**: CSS (Custom Design)
 
 ## Getting Started
 
 ### Prerequisites
 
-- Node.js (v18 or higher)
+- Node.js 18+
 - npm
 
 ### Installation
 
-1. Clone the repository:
-   ```bash
-   git clone https://github.com/yourusername/tuner.git
-   cd tuner
-   ```
+```bash
+git clone https://github.com/neileverette/tuner.git
+cd tuner
+npm install
+```
 
-2. Install dependencies:
-   ```bash
-   npm install
-   ```
+### Development
 
-3. Start the development server:
-   ```bash
-   npm run dev
-   ```
+```bash
+npm run dev
+```
 
-   This starts both the Vite frontend (port 5173) and the Express proxy server (port 3001).
+This starts:
+- Vite dev server on `http://localhost:5173` (with HMR)
+- Express proxy server on `http://localhost:3001`
 
-4. Open http://localhost:5173 in your browser.
-
-### Building for Production
+### Production Build
 
 ```bash
 npm run build
 npm start
 ```
 
-## Project Structure
+Serves the built app with integrated proxy on port 3001.
 
-```
-src/
-├── adapters/          # Source-specific adapters
-│   ├── SomaFMAdapter.ts
-│   └── RadioParadiseAdapter.ts
-├── components/        # React components
-├── config/            # Channel definitions, genres
-├── hooks/             # React hooks (useChannels, useNowPlaying)
-├── services/          # SourceRegistry orchestration
-├── types/             # TypeScript interfaces
-└── App.tsx            # Main application
+## Adding a New Source
 
-server/
-└── index.js           # Express proxy server
+1. **Create adapter** in `src/adapters/`:
+
+```typescript
+export class NewSourceAdapter implements SourceAdapter {
+  readonly source = 'newsource' as SourceType;
+  readonly name = 'New Source';
+
+  async fetchChannels(): Promise<Channel[]> {
+    // Fetch and normalize channels
+  }
+
+  async fetchNowPlaying(channelId: string): Promise<NowPlaying | null> {
+    // Fetch current track info
+  }
+
+  getStreamUrl(channel: Channel): string {
+    return `/api/stream/newsource/${channel.id}`;
+  }
+}
 ```
+
+2. **Register adapter** in `src/services/SourceRegistry.ts`:
+
+```typescript
+registry.register(new NewSourceAdapter());
+```
+
+3. **Add proxy routes** in `server/index.js` and `server/production.js`:
+
+```javascript
+app.get('/api/stream/newsource/:id', async (req, res) => {
+  // Proxy the stream
+});
+```
+
+4. **Update types** in `src/types/` if needed.
+
+## Tech Stack
+
+- **Frontend:** React 19, TypeScript, Vite
+- **Backend:** Express.js, Node.js
+- **Styling:** CSS with custom properties
+- **Icons:** Material Symbols Outlined
 
 ## Testing
-
-Run the test suite:
 
 ```bash
 npx vitest run
 ```
 
-Current coverage: 68 tests across adapters, services, and hooks.
-
-## Adding New Sources
-
-See [CONTRIBUTING.md](CONTRIBUTING.md) for a guide on adding new streaming sources.
-
 ## License
 
-[MIT](LICENSE)
+MIT
