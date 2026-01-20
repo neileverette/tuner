@@ -1,5 +1,6 @@
 import express from 'express';
 import cors from 'cors';
+import http from 'http';
 import https from 'https';
 import { fileURLToPath } from 'url';
 import { dirname, join } from 'path';
@@ -13,6 +14,85 @@ app.use(express.json());
 
 // Serve static files from the built frontend
 app.use(express.static(join(__dirname, '..', 'dist')));
+
+// Radio Paradise channel and quality mappings
+const RP_CHANNELS = {
+  main:   { prefix: '' },
+  mellow: { prefix: 'mellow-' },
+  rock:   { prefix: 'rock-' },
+  global: { prefix: 'global-' }
+};
+
+const RP_QUALITIES = {
+  'flac':    { main: 'flac',    other: 'flac',  contentType: 'audio/flac' },
+  'aac-320': { main: 'aac-320', other: '320',   contentType: 'audio/aac' },
+  'mp3-128': { main: 'mp3-128', other: '128',   contentType: 'audio/mpeg' }
+};
+
+// Proxy Radio Paradise streams
+app.get('/api/stream/rp/:channel/:quality', (req, res) => {
+  const { channel, quality } = req.params;
+
+  if (!RP_CHANNELS[channel]) {
+    return res.status(400).json({ error: 'Invalid channel' });
+  }
+  if (!RP_QUALITIES[quality]) {
+    return res.status(400).json({ error: 'Invalid quality' });
+  }
+
+  const isMain = channel === 'main';
+  const qualitySuffix = isMain ? RP_QUALITIES[quality].main : RP_QUALITIES[quality].other;
+  const streamUrl = `http://stream.radioparadise.com/${RP_CHANNELS[channel].prefix}${qualitySuffix}`;
+
+  console.log('Proxying Radio Paradise stream:', streamUrl);
+
+  const options = {
+    headers: {
+      'User-Agent': 'Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36'
+    }
+  };
+
+  http.get(streamUrl, options, (streamRes) => {
+    res.setHeader('Content-Type', RP_QUALITIES[quality].contentType);
+    res.setHeader('Cache-Control', 'no-cache');
+    streamRes.pipe(res);
+  }).on('error', (err) => {
+    console.error('Radio Paradise stream error:', err);
+    res.status(500).json({ error: 'Stream error' });
+  });
+});
+
+// Proxy Radio Paradise now-playing API
+app.get('/api/rp/nowplaying/:chan', (req, res) => {
+  const chan = parseInt(req.params.chan, 10);
+
+  if (isNaN(chan) || chan < 0 || chan > 3) {
+    return res.status(400).json({ error: 'Invalid channel' });
+  }
+
+  const apiUrl = `https://api.radioparadise.com/api/get_block?bitrate=4&info=true&chan=${chan}`;
+
+  console.log('Proxying Radio Paradise now-playing:', apiUrl);
+
+  const options = {
+    headers: {
+      'User-Agent': 'Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36'
+    }
+  };
+
+  https.get(apiUrl, options, (apiRes) => {
+    let data = '';
+    apiRes.on('data', (chunk) => { data += chunk; });
+    apiRes.on('end', () => {
+      res.setHeader('Content-Type', 'application/json');
+      res.setHeader('Cache-Control', 'no-store');
+      res.send(data);
+    });
+  }).on('error', (err) => {
+    console.error('Radio Paradise API error:', err);
+    res.status(500).json({ error: 'API error' });
+  });
+});
 
 // Proxy SomaFM streams to avoid CORS/403 issues
 app.get('/api/stream/:channelId', (req, res) => {
