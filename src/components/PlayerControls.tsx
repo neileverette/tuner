@@ -28,7 +28,7 @@ function PlayerControls({
       </div>
 
       <div className="playback-controls">
-        <button className="control-btn play-btn" onClick={onPlayPause}>
+        <button className={`control-btn play-btn ${isPlaying ? 'playing' : ''}`} onClick={onPlayPause}>
           {isPlaying ? (
             <svg viewBox="0 0 24 24" fill="currentColor">
               <path d="M6 19h4V5H6v14zm8-14v14h4V5h-4z" />

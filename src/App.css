@@ -702,7 +702,8 @@
 .control-btn {
   width: 40px;
   height: 40px;
-  border: 2px solid rgba(255, 255, 255, 0.8);
+  border: none;
+  outline: none;
   border-radius: 50%;
   background: transparent;
   color: #fff;
@@ -714,9 +715,10 @@
   transition: all 0.15s ease;
 }
 
-.control-btn:hover {
-  background: rgba(255, 255, 255, 0.2);
-  border-color: #fff;
+.control-btn:hover,
+.control-btn:focus {
+  background: rgba(255, 255, 255, 0.1);
+  outline: none;
 }
 
 .control-btn svg {
@@ -725,9 +727,40 @@
 }
 
 .control-btn.play-btn {
+  position: relative;
   width: 56px;
   height: 56px;
+  background: rgba(0, 0, 0, 0.3);
+  z-index: 1;
+  isolation: isolate;
 }
+
+.control-btn.play-btn::before {
+  content: '';
+  position: absolute;
+  inset: -3px;
+  border-radius: 50%;
+  padding: 3px;
+  background: conic-gradient(
+    from 90deg,
+    rgba(96, 0, 114, 1) 0deg,
+    rgba(255, 0, 0, 1) 40deg,
+    rgba(255, 192, 0, 1) 131deg,
+    rgba(151, 248, 19, 1) 192deg,
+    rgba(2, 160, 251, 1) 256deg,
+    rgba(10, 171, 240, 1) 287deg,
+    rgba(10, 0, 178, 1) 338deg,
+    rgba(96, 0, 114, 1) 360deg
+  );
+  -webkit-mask:
+    linear-gradient(#fff 0 0) content-box,
+    linear-gradient(#fff 0 0);
+  -webkit-mask-composite: xor;
+  mask-composite: exclude;
+  z-index: -1;
+  pointer-events: none;
+}
+
 
 /* Progress Bar */
 .listeners-info {
