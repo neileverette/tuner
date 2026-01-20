@@ -5,16 +5,16 @@
 See: .planning/PROJECT.md (Genre Organizer)
 
 **Core value:** Multi-source radio aggregator with unified genre classification
-**Current focus:** Phase 3 Complete - Ready for Phase 4 or Phase 5 (parallel)
+**Current focus:** Phase 4 Complete - Backend API ready, Phase 5 or 6 next
 
 ## Current Position
 
-Phase: 3 of 8 (Radio Paradise Integration) - COMPLETE
-Plan: 03-01-PLAN.md executed successfully
-Status: Phase 3 complete, Radio Paradise proxy endpoints added to backend
-Last activity: 2026-01-19 - Executed 03-01-PLAN.md
+Phase: 4 of 8 (Backend API Organization) - COMPLETE
+Plan: 04-01-PLAN.md executed
+Status: /api/channels endpoint operational with genre and source views
+Last activity: 2026-01-19 - Completed 04-01-PLAN.md
 
-Progress: [####      ] 37.5%
+Progress: [#####     ] 50%
 
 ## Phase Summary
 
@@ -23,18 +23,18 @@ Progress: [####      ] 37.5%
 | 1 | Genre Registry & Taxonomy | **Complete** | - |
 | 2 | Source Registry System | **Complete** | Phase 1 |
 | 3 | Radio Paradise Integration | **Complete** | Phase 2 |
-| 4 | Backend API Organization | Ready | Phase 3 |
+| 4 | Backend API Organization | **Complete** | Phase 3 |
 | 5 | UI Refactoring | Ready (parallel) | - |
-| 6 | Genre Panel Updates | Not Started | Phase 4, 5 |
+| 6 | Genre Panel Updates | Ready | Phase 4, 5 |
 | 7 | View Mode Toggle | Not Started | Phase 6 |
 | 8 | Genre Filtering & Persistence | Not Started | Phase 7 |
 
 ## Parallel Workstreams
 
-**Stream A (Data/Backend):** Phase 1 (DONE) -> 2 (DONE) -> 3 (DONE) -> 4
+**Stream A (Data/Backend):** Phase 1 (DONE) -> 2 (DONE) -> 3 (DONE) -> 4 (DONE)
 **Stream B (Frontend):** Phase 5 (Ready to start)
 
-Both converge at Phase 6.
+Both converge at Phase 6 (now unblocked on backend side).
 
 ## Research Required
 
@@ -62,6 +62,12 @@ Both converge at Phase 6.
   - Added Radio Paradise stream proxy: /api/rp/stream/:channelId/:format
   - Added Radio Paradise now-playing proxy: /api/rp/now-playing/:chan
   - Supports all 4 channels (Main, Mellow, Rock, Global) and 3 formats (AAC, FLAC, MP3)
+- Phase 4 plan (04-01-PLAN.md)
+- Phase 4 implementation (04-01-SUMMARY.md)
+  - src/config/api-types.ts (ApiChannel, GenreGroup, SourceGroup, response types)
+  - src/config/aggregation.ts (aggregateByGenre, aggregateBySource)
+  - tsconfig.server.json (ESM build config)
+  - GET /api/channels endpoint with ?view=genre|source
 
 ## Key Artifacts
 
@@ -69,20 +75,33 @@ Both converge at Phase 6.
 |------|---------|
 | src/config/genres.ts | Genre taxonomy (8 categories, GenreId type) |
 | src/config/types.ts | All config interfaces (ChannelDefinition, StreamDefinition, SourceApiConfig) |
+| src/config/api-types.ts | API response types (ApiChannel, GenreGroup, SourceGroup) |
+| src/config/aggregation.ts | Channel aggregation (aggregateByGenre, aggregateBySource) |
 | src/config/sources/index.ts | Source registry (SOURCES, getAllChannelMappings, getAllChannelDefinitions) |
-| server/index.js | Express backend with SomaFM and Radio Paradise CORS proxies |
+| server/index.js | Express backend with proxies and /api/channels endpoint |
+| tsconfig.server.json | Build config for server-consumable ESM modules |
+
+## API Endpoints Available
+
+| Endpoint | Description |
+|----------|-------------|
+| GET /api/channels | All channels by genre (default) |
+| GET /api/channels?view=source | All channels by source, then genre |
+| GET /api/stream/:channelId | SomaFM stream proxy |
+| GET /api/rp/stream/:channelId/:format | Radio Paradise stream proxy |
+| GET /api/rp/now-playing/:chan | Radio Paradise now-playing proxy |
 
 ## Session Continuity
 
 Last session: 2026-01-19
-Completed: Phase 3 plan executed
-Resume: Create Phase 4 plan (Backend API Organization) or start Phase 5 (UI Refactoring) in parallel
+Completed: Phase 4 plan executed
+Resume: Create Phase 5 plan (UI Refactoring) or Phase 6 plan (Genre Panel Updates)
 
 ## Next Steps
 
-1. **Option A:** Create Phase 4 plan (Backend API Organization) - builds on Phase 3
-2. **Option B:** Create Phase 5 plan (UI Refactoring) - can run in parallel
-3. Phase 4 will create /api/channels endpoint with ?view=genre|source parameter
+1. **Phase 5:** Create plan for UI Refactoring (component extraction, TypeScript migration)
+2. **Phase 6:** Create plan for Genre Panel Updates (consume /api/channels, replace hardcoded data)
+3. Both phases can now proceed since backend API is ready
 
 ---
 *Updated: 2026-01-19*
