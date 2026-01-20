@@ -5,3 +5,5 @@ export { useNowPlaying } from './useNowPlaying';
 export type { UseNowPlayingResult } from './useNowPlaying';
 
 export { useRadioParadiseArt } from './useRadioParadiseArt';
+
+export { useFavorites } from './useFavorites';

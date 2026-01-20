@@ -6,10 +6,11 @@ import StationPicker from './components/StationPicker'
 import HeroArtwork from './components/HeroArtwork'
 import SplashScreen from './components/SplashScreen'
 import Instructions from './components/Instructions'
-import { useChannels, useNowPlaying } from './hooks'
+import { useChannels, useNowPlaying, useFavorites } from './hooks'
 
 function App() {
   const { channels, isLoading, error, refetch, getStreamUrl } = useChannels()
+  const { isFavorite, toggleFavorite } = useFavorites()
   const [selectedIndex, setSelectedIndex] = useState(() => {
     const saved = localStorage.getItem('tuner-selected-index')
     return saved ? parseInt(saved, 10) : 0
@@ -288,6 +289,8 @@ function App() {
         selectedIndex={selectedIndex}
         onSelectChannel={playChannel}
         visible={contentVisible}
+        isFavorite={isFavorite}
+        onToggleFavorite={toggleFavorite}
       />
 
 

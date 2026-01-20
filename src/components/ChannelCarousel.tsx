@@ -8,6 +8,8 @@ interface ChannelCarouselProps {
   onSelectChannel: (index: number) => void
   visible: boolean
   getOverrideImage?: (channelId: string) => string | null
+  isFavorite?: (channelId: string) => boolean
+  onToggleFavorite?: (channelId: string) => void
 }
 
 function ChannelCarousel({
@@ -15,6 +17,8 @@ function ChannelCarousel({
   selectedIndex,
   onSelectChannel,
   visible,
+  isFavorite,
+  onToggleFavorite,
 }: ChannelCarouselProps) {
   const carouselRef = useRef<HTMLDivElement | null>(null)
   const isDragging = useRef(false)
@@ -79,6 +83,8 @@ function ChannelCarousel({
           index={index}
           isSelected={index === selectedIndex}
           onSelect={onSelectChannel}
+          isFavorite={isFavorite?.(channel.id)}
+          onToggleFavorite={onToggleFavorite}
         />
       ))}
     </div>

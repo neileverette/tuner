@@ -6,6 +6,8 @@ interface ChannelCardProps {
   isSelected: boolean
   onSelect: (index: number) => void
   overrideImage?: string | null
+  isFavorite?: boolean
+  onToggleFavorite?: (channelId: string) => void
 }
 
 function getSourceFromId(id: string): 'kexp' | 'somafm' | 'rp' | null {
@@ -26,7 +28,7 @@ function getSourceBadgeLabel(source: 'kexp' | 'somafm' | 'rp'): string {
 // Radio Paradise logo as fallback when no album art available
 const RP_FALLBACK_IMAGE = 'https://img.radioparadise.com/logos/rp_logo_128.png'
 
-function ChannelCard({ channel, index, isSelected, onSelect, overrideImage }: ChannelCardProps) {
+function ChannelCard({ channel, index, isSelected, onSelect, overrideImage, isFavorite = false, onToggleFavorite }: ChannelCardProps) {
   const source = getSourceFromId(channel.id)
   const isKexp = source === 'kexp'
 
@@ -34,6 +36,11 @@ function ChannelCard({ channel, index, isSelected, onSelect, overrideImage }: Ch
   const imageUrl = overrideImage
     ?? channel.image.medium
     ?? (source === 'rp' ? RP_FALLBACK_IMAGE : '')
+
+  const handleFavoriteClick = (e: React.MouseEvent) => {
+    e.stopPropagation()
+    onToggleFavorite?.(channel.id)
+  }
 
   return (
     <div
@@ -49,6 +56,13 @@ function ChannelCard({ channel, index, isSelected, onSelect, overrideImage }: Ch
           <img src={imageUrl} alt={channel.title} />
         )}
         {source && !isKexp && <span className={`source-badge source-${source}`}>{getSourceBadgeLabel(source)}</span>}
+        <button
+          className={`favorite-btn ${isFavorite ? 'is-favorite' : ''}`}
+          onClick={handleFavoriteClick}
+          aria-label={isFavorite ? 'Remove from favorites' : 'Add to favorites'}
+        >
+          <span className="material-symbols-outlined">favorite</span>
+        </button>
       </div>
       <span className="carousel-item-title">{channel.title}</span>
     </div>
