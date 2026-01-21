@@ -1,5 +1,3 @@
-const NTS_LOGO = 'https://media.ntslive.co.uk/crop/770x770/d0a1a0e6-a19a-48f4-884a-c3b72e76dd45_1551974400.png'
-
 interface HeroArtworkProps {
   currentImage: string
   prevImage: string
@@ -42,16 +40,16 @@ function HeroArtwork({
             className={`hero-nts-logo hero-nts-prev ${isTransitioning ? `transitioning ${transitionDirection}` : ''}`}
             style={{ backgroundColor: prevNtsBgColor }}
           >
-            <img src={NTS_LOGO} alt="" className="hero-nts-blur" />
-            <img src={NTS_LOGO} alt="NTS" className="hero-nts-main" />
+            <span className="hero-nts-blur">NTS</span>
+            <span className="hero-nts-main">NTS</span>
           </div>
         )}
         <div
           className={`hero-nts-logo hero-nts-current ${isTransitioning ? `transitioning ${transitionDirection}` : ''}`}
           style={{ backgroundColor: ntsBgColor }}
         >
-          <img src={NTS_LOGO} alt="" className="hero-nts-blur" />
-          <img src={NTS_LOGO} alt="NTS" className="hero-nts-main" />
+          <span className="hero-nts-blur">NTS</span>
+          <span className="hero-nts-main">NTS</span>
         </div>
       </div>
     )

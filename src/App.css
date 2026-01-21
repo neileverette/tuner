@@ -152,18 +152,24 @@
 
 .hero-nts-blur {
   position: absolute;
-  width: 500px;
-  height: auto;
-  opacity: 0.2;
-  filter: blur(40px) brightness(1.2);
+  font-size: 280px;
+  font-weight: 900;
+  letter-spacing: -0.02em;
+  color: #fff;
+  opacity: 0.15;
+  filter: blur(50px);
+  user-select: none;
 }
 
 .hero-nts-main {
   position: relative;
-  width: 180px;
-  height: auto;
+  font-size: 180px;
+  font-weight: 900;
+  letter-spacing: -0.02em;
+  color: #fff;
   z-index: 1;
-  filter: brightness(1.1);
+  text-shadow: 0 4px 30px rgba(0, 0, 0, 0.3);
+  user-select: none;
 }
 
 .hero-nts-prev {
@@ -448,6 +454,43 @@
   height: auto;
   outline: none;
   border: none !important;
+}
+
+/* NTS Carousel Logo */
+.nts-logo-container {
+  width: 100%;
+  height: 100%;
+  border-radius: 4px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  outline: none;
+  position: relative;
+  overflow: hidden;
+}
+
+.nts-logo-container::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  background: linear-gradient(135deg, rgba(255, 255, 255, 0.15) 0%, transparent 50%, rgba(0, 0, 0, 0.15) 100%);
+  pointer-events: none;
+}
+
+.carousel-item.selected .nts-logo-container {
+  border: 4px solid #fff;
+}
+
+.nts-logo-text {
+  font-size: 18px;
+  font-weight: 900;
+  color: #fff;
+  letter-spacing: -0.02em;
+  text-shadow: 0 2px 8px rgba(0, 0, 0, 0.3);
+  user-select: none;
 }
 
 .carousel-item-title {

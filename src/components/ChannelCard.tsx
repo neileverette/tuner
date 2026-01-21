@@ -10,17 +10,19 @@ interface ChannelCardProps {
   onToggleFavorite?: (channelId: string) => void
 }
 
-function getSourceFromId(id: string): 'kexp' | 'somafm' | 'rp' | null {
+function getSourceFromId(id: string): 'kexp' | 'somafm' | 'rp' | 'nts' | null {
   if (id.startsWith('kexp:')) return 'kexp'
   if (id.startsWith('somafm:')) return 'somafm'
   if (id.startsWith('rp:')) return 'rp'
+  if (id.startsWith('nts:')) return 'nts'
   return null
 }
 
-function getSourceBadgeLabel(source: 'kexp' | 'somafm' | 'rp'): string {
+function getSourceBadgeLabel(source: 'kexp' | 'somafm' | 'rp' | 'nts'): string {
   switch (source) {
     case 'kexp': return 'KEXP'
     case 'rp': return 'RP'
+    case 'nts': return 'NTS'
     default: return 'SF'
   }
 }
@@ -31,6 +33,7 @@ const RP_FALLBACK_IMAGE = 'https://img.radioparadise.com/logos/rp_logo_128.png'
 function ChannelCard({ channel, index, isSelected, onSelect, overrideImage, isFavorite = false, onToggleFavorite }: ChannelCardProps) {
   const source = getSourceFromId(channel.id)
   const isKexp = source === 'kexp'
+  const isNts = source === 'nts'
 
   // Use override image if provided, otherwise channel default, with RP fallback
   const imageUrl = overrideImage
@@ -52,10 +55,14 @@ function ChannelCard({ channel, index, isSelected, onSelect, overrideImage, isFa
           <div className="kexp-logo-container">
             <img src="https://www.kexp.org/static/assets/img/logo-header.svg" alt="KEXP" />
           </div>
+        ) : isNts ? (
+          <div className="nts-logo-container" style={{ backgroundColor: channel.bgColor || '#1a1a1a' }}>
+            <span className="nts-logo-text">NTS</span>
+          </div>
         ) : (
           <img src={imageUrl} alt={channel.title} />
         )}
-        {source && !isKexp && <span className={`source-badge source-${source}`}>{getSourceBadgeLabel(source)}</span>}
+        {source && !isKexp && !isNts && <span className={`source-badge source-${source}`}>{getSourceBadgeLabel(source)}</span>}
         <button
           className={`favorite-btn ${isFavorite ? 'is-favorite' : ''}`}
           onClick={handleFavoriteClick}

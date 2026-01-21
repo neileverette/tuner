@@ -31,7 +31,8 @@ interface NTSLiveResponse {
   }>;
 }
 
-const NTS_LOGO = 'https://media.ntslive.co.uk/crop/770x770/d0a1a0e6-a19a-48f4-884a-c3b72e76dd45_1551974400.png';
+// Simple 1x1 transparent pixel as placeholder - carousel will show channel card with bgColor
+const NTS_LOGO = 'data:image/gif;base64,R0lGODlhAQABAIAAAAAAAP///yH5BAEAAAAALAAAAAABAAEAAAIBRAA7';
 
 const NTS_CHANNELS: NTSChannelDef[] = [
   // Live channels
