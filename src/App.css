@@ -474,7 +474,7 @@
 
 .nts-logo-blur {
   position: absolute;
-  width: 40%;
+  width: 55%;
   height: auto;
   opacity: 0.25;
   filter: blur(3px);
@@ -484,10 +484,15 @@
 
 .nts-logo-img {
   position: relative;
-  width: 35%;
+  width: 45%;
   height: auto;
   filter: drop-shadow(0 1px 4px rgba(0, 0, 0, 0.3));
   user-select: none;
+}
+
+.nts-logo-container img {
+  outline: none !important;
+  border: none !important;
 }
 
 .carousel-item-title {
