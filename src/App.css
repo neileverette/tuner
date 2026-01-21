@@ -757,6 +757,9 @@
 .song-name {
   font-size: 28px;
   font-weight: 600;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
 }
 
 .artist {
@@ -880,15 +883,24 @@
 }
 
 
-/* Listeners Info */
-.listeners-info {
+/* Play Section - fixed right with listeners + play button */
+.play-section {
   display: flex;
   align-items: center;
+  justify-content: flex-end;
+  gap: 24px;
   padding-right: 24px;
+}
+
+.play-section .play-btn {
+  margin-right: 0;
+}
+
+.listeners-count {
   color: rgba(255, 255, 255, 0.6);
   font-size: 14px;
-  justify-content: flex-end;
-  min-width: 0;
+  white-space: nowrap;
+  padding-right: 24px;
 }
 
 /* Header */

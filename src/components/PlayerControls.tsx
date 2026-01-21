@@ -35,6 +35,18 @@ function PlayerControls({
         <button className="control-btn chevron-btn chevron-left" onClick={onPrev}>
           <span className="material-symbols-outlined">chevron_left</span>
         </button>
+        <button className="control-btn chevron-btn chevron-right" onClick={onNext}>
+          <span className="material-symbols-outlined">chevron_right</span>
+        </button>
+      </div>
+
+      {/* Fixed right: listeners + play button */}
+      <div className="play-section">
+        <span className="listeners-count">
+          {currentChannel?.listeners != null && currentChannel.listeners > 0
+            ? `${currentChannel.listeners.toLocaleString()} listeners`
+            : ''}
+        </span>
         <button className={`control-btn play-btn ${isPlaying ? 'playing' : ''}`} onClick={onPlayPause}>
           {isPlaying ? (
             <svg viewBox="0 0 24 24" fill="currentColor">
@@ -46,17 +58,6 @@ function PlayerControls({
             </svg>
           )}
         </button>
-        <button className="control-btn chevron-btn chevron-right" onClick={onNext}>
-          <span className="material-symbols-outlined">chevron_right</span>
-        </button>
-      </div>
-
-      <div className="listeners-info">
-        <span>
-          {currentChannel?.listeners != null && currentChannel.listeners > 0
-            ? `${currentChannel.listeners.toLocaleString()} listeners`
-            : 'Lots of listeners'}
-        </span>
       </div>
     </div>
   )
