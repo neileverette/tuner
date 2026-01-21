@@ -427,7 +427,7 @@
     rgba(96, 0, 114, 1) 360deg
   );
   filter: blur(3px);
-  opacity: 0.8;
+  opacity: 0.5;
   z-index: -1;
   pointer-events: none;
 }
