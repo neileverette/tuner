@@ -126,6 +126,90 @@
   z-index: 1;
 }
 
+/* NTS Hero Logo Treatment */
+.hero-nts-logo {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  overflow: hidden;
+}
+
+.hero-nts-logo::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  background: linear-gradient(135deg, rgba(255, 255, 255, 0.1) 0%, transparent 50%, rgba(0, 0, 0, 0.2) 100%);
+  pointer-events: none;
+}
+
+.hero-nts-blur {
+  position: absolute;
+  width: 500px;
+  height: auto;
+  opacity: 0.2;
+  filter: blur(40px) brightness(1.2);
+}
+
+.hero-nts-main {
+  position: relative;
+  width: 180px;
+  height: auto;
+  z-index: 1;
+  filter: brightness(1.1);
+}
+
+.hero-nts-prev {
+  z-index: 0;
+}
+
+.hero-nts-current {
+  z-index: 1;
+}
+
+.hero-nts-prev.transitioning.right {
+  animation: nts-slide-out-left 0.6s ease forwards;
+}
+
+.hero-nts-prev.transitioning.left {
+  animation: nts-slide-out-right 0.6s ease forwards;
+}
+
+.hero-nts-current.transitioning.right {
+  animation: nts-slide-in-right 0.6s ease forwards;
+}
+
+.hero-nts-current.transitioning.left {
+  animation: nts-slide-in-left 0.6s ease forwards;
+}
+
+@keyframes nts-slide-out-left {
+  from { transform: translateX(0); opacity: 1; }
+  to { transform: translateX(-100%); opacity: 0; }
+}
+
+@keyframes nts-slide-out-right {
+  from { transform: translateX(0); opacity: 1; }
+  to { transform: translateX(100%); opacity: 0; }
+}
+
+@keyframes nts-slide-in-right {
+  from { transform: translateX(100%); opacity: 0; }
+  to { transform: translateX(0); opacity: 1; }
+}
+
+@keyframes nts-slide-in-left {
+  from { transform: translateX(-100%); opacity: 0; }
+  to { transform: translateX(0); opacity: 1; }
+}
+
 .hero-artwork::after {
   content: '';
   position: absolute;

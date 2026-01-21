@@ -46,4 +46,5 @@ export type Channel = {
   nowPlaying: NowPlaying | null;
   listeners: number | null;
   homepage: string | null;
+  bgColor?: string;
 };

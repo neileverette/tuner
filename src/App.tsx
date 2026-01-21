@@ -61,6 +61,8 @@ function App() {
     return localStorage.getItem('tuner-current-image') || ''
   })
   const [prevImage, setPrevImage] = useState('')
+  const [ntsBgColor, setNtsBgColor] = useState('')
+  const [prevNtsBgColor, setPrevNtsBgColor] = useState('')
   const [isTransitioning, setIsTransitioning] = useState(false)
   const [transitionDirection, setTransitionDirection] = useState<'left' | 'right'>('right')
   const [showStationPicker, setShowStationPicker] = useState(false)
@@ -132,7 +134,12 @@ function App() {
       setCurrentImage(channel.image.large)
       localStorage.setItem('tuner-current-image', channel.image.large)
     }
-  }, [sortedChannels, currentImage, selectedChannelId, selectedIndex])
+
+    // Set initial NTS background color
+    if (channel && channel.source === 'nts' && channel.bgColor && !ntsBgColor) {
+      setNtsBgColor(channel.bgColor)
+    }
+  }, [sortedChannels, currentImage, selectedChannelId, selectedIndex, ntsBgColor])
 
   // Play channel with debounced audio loading
   const playChannel = useCallback((index: number) => {
@@ -161,6 +168,16 @@ function App() {
       }
       return newImage
     })
+
+    // Handle NTS background color transitions
+    if (channel.source === 'nts' && channel.bgColor) {
+      setNtsBgColor((prev) => {
+        if (channel.bgColor !== prev) {
+          setPrevNtsBgColor(prev)
+        }
+        return channel.bgColor!
+      })
+    }
 
     // Cancel any pending audio load
     if (playTimeoutRef.current) {
@@ -301,6 +318,9 @@ function App() {
         transitionDirection={transitionDirection}
         altText={selectedChannel?.title || 'Channel art'}
         isKexp={selectedChannel?.id.startsWith('kexp:')}
+        isNts={selectedChannel?.source === 'nts'}
+        ntsBgColor={ntsBgColor || selectedChannel?.bgColor}
+        prevNtsBgColor={prevNtsBgColor}
       />
 
       {/* Instructions */}
