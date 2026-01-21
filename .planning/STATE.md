@@ -118,10 +118,9 @@ Resume: Create Phase 6 plan for Genre Panel Updates
 
 ## Next Steps
 
-1. **Milestone 3 - Phase 14:** NTS Source Configuration
-   - Create `src/config/sources/nts.ts` (18 channel definitions)
-   - Map to genre taxonomy
-   - Add to source registry
+1. **Milestone 3 - Phase 15:** NTS Backend Proxy
+   - Add NTS stream proxy routes to `server/index.js`
+   - Test stream proxying for all 18 channels
 
 Note: Milestone 1 Phases 6-7 deferred. Phase 8 (filtering) on separate branch.
 
@@ -134,8 +133,8 @@ Note: Milestone 1 Phases 6-7 deferred. Phase 8 (filtering) on separate branch.
 
 ### Milestone 3 Progress
 - [x] Phase 13: NTS API Research (Complete)
-- [ ] Phase 14: NTS Source Configuration (Ready)
-- [ ] Phase 15: NTS Backend Proxy
+- [x] Phase 14: NTS Source Configuration (Complete)
+- [ ] Phase 15: NTS Backend Proxy (Ready)
 - [ ] Phase 16: NTS Integration Testing
 
 ## Phase 5 Summary

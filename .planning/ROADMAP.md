@@ -480,11 +480,11 @@ Outputs:
 | Phase | Plans | Status | Completed |
 |-------|-------|--------|-----------|
 | 13. NTS API Research | 1/1 | Complete | 2026-01-21 |
-| 14. NTS Source Configuration | 0/? | Ready | - |
-| 15. NTS Backend Proxy | 0/? | Not Started | - |
+| 14. NTS Source Configuration | 1/1 | Complete | 2026-01-21 |
+| 15. NTS Backend Proxy | 0/? | Ready | - |
 | 16. NTS Integration Testing | 0/? | Not Started | - |
 
-**Milestone 3 Progress:** 25% (1 of 4 phases complete)
+**Milestone 3 Progress:** 50% (2 of 4 phases complete)
 
 ## NTS Stream Reference (Complete)
 
