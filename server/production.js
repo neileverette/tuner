@@ -17,10 +17,10 @@ app.use(express.static(join(__dirname, '..', 'dist')));
 
 // Radio Paradise channel and quality mappings
 const RP_CHANNELS = {
-  main:   { prefix: '' },
-  mellow: { prefix: 'mellow-' },
-  rock:   { prefix: 'rock-' },
-  global: { prefix: 'global-' }
+  main:     { prefix: '' },
+  mellow:   { prefix: 'mellow-' },
+  eclectic: { prefix: 'eclectic-' },
+  global:   { prefix: 'global-' }
 };
 
 const RP_QUALITIES = {

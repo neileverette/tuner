@@ -25,7 +25,7 @@ interface RPGetBlockResponse {
 const RP_CHANNELS: RPChannelDef[] = [
   { id: 'main', chan: 0, title: 'Main Mix', description: 'Eclectic mix of rock, world, electronic, and more', genre: 'Eclectic', streamPath: '' },
   { id: 'mellow', chan: 1, title: 'Mellow Mix', description: 'Relaxed, atmospheric, and chilled selections', genre: 'Ambient/Chillout', streamPath: 'mellow-' },
-  { id: 'rock', chan: 2, title: 'Rock Mix', description: 'Guitar-driven rock and alternative', genre: 'Rock/Alternative', streamPath: 'rock-' },
+  { id: 'eclectic', chan: 2, title: 'Rock Mix', description: 'Guitar-driven rock and alternative', genre: 'Rock/Alternative', streamPath: 'eclectic-' },
   { id: 'global', chan: 3, title: 'Global Mix', description: 'World music and international sounds', genre: 'World', streamPath: 'global-' },
 ];
 

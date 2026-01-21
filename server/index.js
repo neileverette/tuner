@@ -51,10 +51,10 @@ app.use(express.json());
 // Main: /aac-320, /flac, /mp3-128
 // Others: /mellow-320, /mellow-flac, /mellow-128, etc.
 const RP_CHANNELS = {
-  main:   { prefix: '' },
-  mellow: { prefix: 'mellow-' },
-  rock:   { prefix: 'rock-' },
-  global: { prefix: 'global-' }
+  main:     { prefix: '' },
+  mellow:   { prefix: 'mellow-' },
+  eclectic: { prefix: 'eclectic-' },
+  global:   { prefix: 'global-' }
 };
 
 // Quality suffixes differ for main vs other channels
