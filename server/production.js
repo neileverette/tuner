@@ -153,6 +153,105 @@ app.get('/api/kexp/nowplaying', (req, res) => {
   });
 });
 
+// NTS Radio live channel mapping
+const NTS_LIVE_CHANNELS = {
+  '1': 'stream',
+  '2': 'stream2'
+};
+
+// NTS Infinite Mixtape IDs (validated set)
+const NTS_VALID_MIXTAPES = new Set([
+  'mixtape', 'mixtape2', 'mixtape3', 'mixtape4', 'mixtape5', 'mixtape6',
+  'mixtape21', 'mixtape22', 'mixtape23', 'mixtape24', 'mixtape26', 'mixtape27',
+  'mixtape31', 'mixtape34', 'mixtape35', 'mixtape36'
+]);
+
+// Proxy NTS live streams
+app.get('/api/nts/live/:channel', (req, res) => {
+  const { channel } = req.params;
+
+  if (!NTS_LIVE_CHANNELS[channel]) {
+    return res.status(400).json({ error: 'Invalid channel. Valid: 1, 2' });
+  }
+
+  const streamPath = NTS_LIVE_CHANNELS[channel];
+  const streamUrl = `https://stream-relay-geo.ntslive.net/${streamPath}`;
+
+  console.log('Proxying NTS live stream:', streamUrl);
+
+  const options = {
+    headers: {
+      'User-Agent': 'Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36'
+    }
+  };
+
+  https.get(streamUrl, options, (streamRes) => {
+    res.setHeader('Content-Type', 'audio/mpeg');
+    res.setHeader('Cache-Control', 'no-cache');
+    streamRes.pipe(res);
+  }).on('error', (err) => {
+    console.error('NTS live stream error:', err);
+    res.status(500).json({ error: 'Stream error' });
+  });
+});
+
+// Proxy NTS Infinite Mixtape streams
+app.get('/api/nts/mixtape/:mixtapeId', (req, res) => {
+  const { mixtapeId } = req.params;
+
+  if (!NTS_VALID_MIXTAPES.has(mixtapeId)) {
+    return res.status(400).json({
+      error: 'Invalid mixtape ID',
+      valid: Array.from(NTS_VALID_MIXTAPES)
+    });
+  }
+
+  const streamUrl = `https://stream-mixtape-geo.ntslive.net/${mixtapeId}`;
+
+  console.log('Proxying NTS mixtape stream:', streamUrl);
+
+  const options = {
+    headers: {
+      'User-Agent': 'Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36'
+    }
+  };
+
+  https.get(streamUrl, options, (streamRes) => {
+    res.setHeader('Content-Type', 'audio/mpeg');
+    res.setHeader('Cache-Control', 'no-cache');
+    streamRes.pipe(res);
+  }).on('error', (err) => {
+    console.error('NTS mixtape stream error:', err);
+    res.status(500).json({ error: 'Stream error' });
+  });
+});
+
+// Proxy NTS now-playing API (returns info for both live channels)
+app.get('/api/nts/nowplaying', (req, res) => {
+  const apiUrl = 'https://www.nts.live/api/v2/live';
+
+  console.log('Proxying NTS now-playing:', apiUrl);
+
+  const options = {
+    headers: {
+      'User-Agent': 'Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36'
+    }
+  };
+
+  https.get(apiUrl, options, (apiRes) => {
+    let data = '';
+    apiRes.on('data', (chunk) => { data += chunk; });
+    apiRes.on('end', () => {
+      res.setHeader('Content-Type', 'application/json');
+      res.setHeader('Cache-Control', 'no-store');
+      res.send(data);
+    });
+  }).on('error', (err) => {
+    console.error('NTS API error:', err);
+    res.status(500).json({ error: 'API error' });
+  });
+});
+
 // Proxy SomaFM streams to avoid CORS/403 issues
 app.get('/api/stream/:channelId', (req, res) => {
   const { channelId } = req.params;
