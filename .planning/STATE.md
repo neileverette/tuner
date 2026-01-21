@@ -118,11 +118,10 @@ Resume: Create Phase 6 plan for Genre Panel Updates
 
 ## Next Steps
 
-1. **Milestone 3 - Phase 13:** NTS API Research
-   - Fetch and analyze NTS Live API
-   - Document all stream URLs (2 live + 15 Infinite Mixtapes)
-   - Map NTS content to genre taxonomy
-   - Create 13-RESEARCH.md
+1. **Milestone 3 - Phase 14:** NTS Source Configuration
+   - Create `src/config/sources/nts.ts` (18 channel definitions)
+   - Map to genre taxonomy
+   - Add to source registry
 
 Note: Milestone 1 Phases 6-7 deferred. Phase 8 (filtering) on separate branch.
 
@@ -130,8 +129,14 @@ Note: Milestone 1 Phases 6-7 deferred. Phase 8 (filtering) on separate branch.
 
 **Milestone 3: NTS Radio Integration** (feature/nts-radio-integration branch)
 - Add NTS Radio as third source (London-based underground radio)
-- 2 live channels + 15 Infinite Mixtapes
+- 2 live channels + 16 Infinite Mixtapes = **18 total channels**
 - Phases 13-16
+
+### Milestone 3 Progress
+- [x] Phase 13: NTS API Research (Complete)
+- [ ] Phase 14: NTS Source Configuration (Ready)
+- [ ] Phase 15: NTS Backend Proxy
+- [ ] Phase 16: NTS Integration Testing
 
 ## Phase 5 Summary
 

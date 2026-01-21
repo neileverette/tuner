@@ -479,44 +479,68 @@ Outputs:
 
 | Phase | Plans | Status | Completed |
 |-------|-------|--------|-----------|
-| 13. NTS API Research | 0/? | Not Started | - |
-| 14. NTS Source Configuration | 0/? | Not Started | - |
+| 13. NTS API Research | 1/1 | Complete | 2026-01-21 |
+| 14. NTS Source Configuration | 0/? | Ready | - |
 | 15. NTS Backend Proxy | 0/? | Not Started | - |
 | 16. NTS Integration Testing | 0/? | Not Started | - |
 
-**Milestone 3 Progress:** 0% (0 of 4 phases complete)
+**Milestone 3 Progress:** 25% (1 of 4 phases complete)
 
-## NTS Stream Reference
+## NTS Stream Reference (Complete)
 
 ```javascript
-// Live Channels (discovered via API)
+// Live Channels
 const ntsLiveChannels = [
-  { name: "NTS 1", channel: 1 },
-  { name: "NTS 2", channel: 2 }
+  { name: "NTS 1", url: "https://stream-relay-geo.ntslive.net/stream" },
+  { name: "NTS 2", url: "https://stream-relay-geo.ntslive.net/stream2" }
 ];
 
-// Infinite Mixtapes (known URLs)
+// All 16 Infinite Mixtapes
 const ntsInfiniteMixtapes = [
-  { name: "Poolside", url: "https://stream-mixtape-geo.ntslive.net/mixtape", genre: "Balearic/Downtempo" },
-  { name: "Slow Focus", url: "https://stream-mixtape-geo.ntslive.net/mixtape4", genre: "Ambient/Drone" },
-  { name: "Low Key", url: "https://stream-mixtape-geo.ntslive.net/mixtape5", genre: "Lo-fi Hip-Hop" },
-  { name: "Expansions", url: "https://stream-mixtape-geo.ntslive.net/mixtape3", genre: "Psychedelic Electronic" }
-  // + 11 more to be discovered in Phase 13
+  { name: "Poolside", id: "mixtape4", genre: "lounge" },
+  { name: "Slow Focus", id: "mixtape", genre: "ambient" },
+  { name: "Low Key", id: "mixtape2", genre: "jazz-soul" },
+  { name: "Memory Lane", id: "mixtape6", genre: "rock" },
+  { name: "4 To The Floor", id: "mixtape5", genre: "electronic" },
+  { name: "Island Time", id: "mixtape21", genre: "world" },
+  { name: "The Tube", id: "mixtape26", genre: "rock" },
+  { name: "Sheet Music", id: "mixtape35", genre: "eclectic" },
+  { name: "Feelings", id: "mixtape27", genre: "jazz-soul" },
+  { name: "Expansions", id: "mixtape3", genre: "jazz-soul" },
+  { name: "Rap House", id: "mixtape22", genre: "electronic" },
+  { name: "Labyrinth", id: "mixtape31", genre: "electronic" },
+  { name: "Sweat", id: "mixtape24", genre: "electronic" },
+  { name: "Otaku", id: "mixtape36", genre: "eclectic" },
+  { name: "The Pit", id: "mixtape34", genre: "rock" },
+  { name: "Field Recordings", id: "mixtape23", genre: "ambient" }
 ];
+// Base URL: https://stream-mixtape-geo.ntslive.net/{id}
 ```
 
-## Genre Mapping (Preliminary)
+## Genre Mapping (Final)
 
-| NTS Channel | Suggested Genre(s) |
-|-------------|-------------------|
-| NTS 1 (Live) | eclectic |
-| NTS 2 (Live) | eclectic |
-| Poolside | chillout, ambient |
-| Slow Focus | ambient |
-| Low Key | hiphop |
-| Expansions | electronic |
+| NTS Channel | Primary Genre | Notes |
+|-------------|---------------|-------|
+| NTS 1 | eclectic | Live broadcasts |
+| NTS 2 | eclectic | Live broadcasts |
+| Poolside | lounge | Balearic, sophisti-pop |
+| Slow Focus | ambient | Drone, ragas |
+| Low Key | jazz-soul | Lo-fi hip-hop, R&B |
+| Memory Lane | rock | Psychedelic |
+| 4 To The Floor | electronic | House, techno |
+| Island Time | world | Reggae, dub |
+| The Tube | rock | Post-punk, industrial |
+| Sheet Music | eclectic | Classical |
+| Feelings | jazz-soul | Soul, gospel |
+| Expansions | jazz-soul | Jazz |
+| Rap House | electronic | Hip-hop/electronic |
+| Labyrinth | electronic | Atmospheric breaks |
+| Sweat | electronic | International dance |
+| Otaku | eclectic | Video game/anime |
+| The Pit | rock | Metal |
+| Field Recordings | ambient | Natural soundscapes |
 
-Final mappings to be determined in Phase 13 research.
+**Total: 18 channels** (2 live + 16 mixtapes)
 
 ---
 *Created: 2026-01-21*
