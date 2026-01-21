@@ -250,10 +250,21 @@ function App() {
     return () => window.removeEventListener('keydown', handleKeyDown)
   }, [handleChannelPrev, handleChannelNext, handlePlayPause])
 
-  // Sync current track from now-playing hook
+  // Sync current track and cover art from now-playing hook
   useEffect(() => {
     if (nowPlaying?.track) {
       setCurrentTrack(nowPlaying.track)
+    }
+    // Update hero image with now-playing cover art when available
+    if (nowPlaying?.coverUrl) {
+      setCurrentImage((prevImage) => {
+        if (nowPlaying.coverUrl !== prevImage) {
+          setPrevImage(prevImage)
+          setIsTransitioning(true)
+          setTimeout(() => setIsTransitioning(false), 600)
+        }
+        return nowPlaying.coverUrl!
+      })
     }
   }, [nowPlaying])
 
