@@ -408,6 +408,28 @@
   pointer-events: none;
 }
 
+.carousel-item.selected .carousel-item-image-wrapper::after {
+  content: '';
+  position: absolute;
+  inset: -6px;
+  border-radius: 8px;
+  background: conic-gradient(
+    from 90deg,
+    rgba(96, 0, 114, 1) 0deg,
+    rgba(255, 0, 0, 1) 40deg,
+    rgba(255, 192, 0, 1) 131deg,
+    rgba(151, 248, 19, 1) 192deg,
+    rgba(2, 160, 251, 1) 256deg,
+    rgba(10, 171, 240, 1) 287deg,
+    rgba(10, 0, 178, 1) 338deg,
+    rgba(96, 0, 114, 1) 360deg
+  );
+  filter: blur(8px);
+  opacity: 0.6;
+  z-index: -1;
+  pointer-events: none;
+}
+
 .carousel-item img:not(.nts-logo-img):not(.nts-logo-blur):not(.kexp-logo-container img) {
   width: 100%;
   height: 100%;
