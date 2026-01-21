@@ -1486,19 +1486,26 @@
 }
 
 /* Welcome Banner */
-.welcome-banner {
+.welcome-overlay {
   position: fixed;
+  inset: 0;
+  z-index: 100;
+  cursor: pointer;
+}
+
+.welcome-banner {
+  position: absolute;
   left: 24px;
   top: 5%;
-  width: 66.67%;
-  max-width: 800px;
+  width: 50%;
+  max-width: 600px;
+  cursor: default;
   background: rgba(0, 0, 0, 0.75);
   backdrop-filter: blur(20px);
   -webkit-backdrop-filter: blur(20px);
   border-radius: 16px;
   padding: 32px 40px;
   color: #fff;
-  z-index: 100;
   pointer-events: auto;
   opacity: 0;
   transform: translateY(10px);
@@ -1609,4 +1616,36 @@
 
 .welcome-banner .welcome-dont-show:hover {
   color: rgba(255, 255, 255, 0.7);
+}
+
+.welcome-sources {
+  position: fixed;
+  bottom: 24px;
+  left: 50%;
+  transform: translateX(-50%);
+  display: flex;
+  gap: 8px;
+  align-items: center;
+}
+
+.welcome-sources-label {
+  font-size: 10px;
+  color: rgba(255, 255, 255, 0.35);
+  margin-right: 4px;
+}
+
+.welcome-sources a {
+  display: inline-block;
+  padding: 4px 10px;
+  font-size: 10px;
+  color: rgba(255, 255, 255, 0.5);
+  background: rgba(255, 255, 255, 0.08);
+  border-radius: 12px;
+  text-decoration: none;
+  transition: color 0.15s ease, background 0.15s ease;
+}
+
+.welcome-sources a:hover {
+  color: rgba(255, 255, 255, 0.85);
+  background: rgba(255, 255, 255, 0.15);
 }

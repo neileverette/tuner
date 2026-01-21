@@ -8,7 +8,8 @@ function WelcomeModal({ visible, onDismiss, onDismissPermanently }: WelcomeModal
   if (!visible) return null
 
   return (
-    <div className="welcome-banner">
+    <div className="welcome-overlay" onClick={onDismiss}>
+      <div className="welcome-banner" onClick={(e) => e.stopPropagation()}>
       <button className="welcome-close" onClick={onDismiss} aria-label="Close">
         <svg viewBox="0 0 24 24" fill="currentColor">
           <path d="M19 6.41L17.59 5 12 10.59 6.41 5 5 6.41 10.59 12 5 17.59 6.41 19 12 13.41 17.59 19 19 17.59 13.41 12z" />
@@ -41,6 +42,16 @@ function WelcomeModal({ visible, onDismiss, onDismissPermanently }: WelcomeModal
             Click station guide to search. <button className="welcome-dont-show" onClick={onDismissPermanently}>Don't show again</button>
           </p>
         </div>
+      </div>
+
+      </div>
+
+      <div className="welcome-sources" onClick={(e) => e.stopPropagation()}>
+        <span className="welcome-sources-label">Streams from</span>
+        <a href="https://somafm.com/support/donate.html" target="_blank" rel="noopener noreferrer">SomaFM</a>
+        <a href="https://radioparadise.com/donate" target="_blank" rel="noopener noreferrer">Radio Paradise</a>
+        <a href="https://www.nts.live/gift-supporters" target="_blank" rel="noopener noreferrer">NTS Radio</a>
+        <a href="https://www.kexp.org/donate/" target="_blank" rel="noopener noreferrer">KEXP</a>
       </div>
     </div>
   )
