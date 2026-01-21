@@ -32,6 +32,8 @@ function HeroArtwork({
     )
   }
 
+  const ntsLogoUrl = 'https://upload.wikimedia.org/wikipedia/commons/thumb/2/20/NTS_Radio_logo.svg/250px-NTS_Radio_logo.svg.png'
+
   if (isNts) {
     return (
       <div className="hero-artwork">
@@ -40,16 +42,16 @@ function HeroArtwork({
             className={`hero-nts-logo hero-nts-prev ${isTransitioning ? `transitioning ${transitionDirection}` : ''}`}
             style={{ backgroundColor: prevNtsBgColor }}
           >
-            <span className="hero-nts-blur">NTS</span>
-            <span className="hero-nts-main">NTS</span>
+            <img src={ntsLogoUrl} alt="" className="hero-nts-blur" />
+            <img src={ntsLogoUrl} alt="NTS" className="hero-nts-main" />
           </div>
         )}
         <div
           className={`hero-nts-logo hero-nts-current ${isTransitioning ? `transitioning ${transitionDirection}` : ''}`}
           style={{ backgroundColor: ntsBgColor }}
         >
-          <span className="hero-nts-blur">NTS</span>
-          <span className="hero-nts-main">NTS</span>
+          <img src={ntsLogoUrl} alt="" className="hero-nts-blur" />
+          <img src={ntsLogoUrl} alt="NTS" className="hero-nts-main" />
         </div>
       </div>
     )

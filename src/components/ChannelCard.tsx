@@ -57,8 +57,8 @@ function ChannelCard({ channel, index, isSelected, onSelect, overrideImage, isFa
           </div>
         ) : isNts ? (
           <div className="nts-logo-container" style={{ backgroundColor: channel.bgColor || '#1a1a1a' }}>
-            <span className="nts-logo-blur">NTS</span>
-            <span className="nts-logo-text">NTS</span>
+            <img src={channel.image.medium} alt="" className="nts-logo-blur" />
+            <img src={channel.image.medium} alt="NTS" className="nts-logo-img" />
           </div>
         ) : (
           <img src={imageUrl} alt={channel.title} />

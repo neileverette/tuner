@@ -31,8 +31,8 @@ interface NTSLiveResponse {
   }>;
 }
 
-// Simple 1x1 transparent pixel as placeholder - carousel will show channel card with bgColor
-const NTS_LOGO = 'data:image/gif;base64,R0lGODlhAQABAIAAAAAAAP///yH5BAEAAAAALAAAAAABAAEAAAIBRAA7';
+// NTS Radio logo from Wikipedia
+const NTS_LOGO = 'https://upload.wikimedia.org/wikipedia/commons/thumb/2/20/NTS_Radio_logo.svg/250px-NTS_Radio_logo.svg.png';
 
 const NTS_CHANNELS: NTSChannelDef[] = [
   // Live channels

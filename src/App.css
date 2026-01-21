@@ -152,23 +152,19 @@
 
 .hero-nts-blur {
   position: absolute;
-  font-size: 280px;
-  font-weight: 900;
-  letter-spacing: -0.02em;
-  color: #fff;
-  opacity: 0.15;
-  filter: blur(50px);
+  width: 400px;
+  height: auto;
+  opacity: 0.2;
+  filter: blur(40px);
   user-select: none;
 }
 
 .hero-nts-main {
   position: relative;
-  font-size: 180px;
-  font-weight: 900;
-  letter-spacing: -0.02em;
-  color: #fff;
+  width: 200px;
+  height: auto;
   z-index: 1;
-  text-shadow: 0 4px 30px rgba(0, 0, 0, 0.3);
+  filter: drop-shadow(0 4px 30px rgba(0, 0, 0, 0.3));
   user-select: none;
 }
 
@@ -478,23 +474,19 @@
 
 .nts-logo-blur {
   position: absolute;
-  font-size: 28px;
-  font-weight: 900;
-  color: #fff;
-  letter-spacing: -0.02em;
-  opacity: 0.35;
-  filter: blur(6px);
+  width: 70%;
+  height: auto;
+  opacity: 0.3;
+  filter: blur(4px);
   user-select: none;
   transform: rotate(-15deg);
 }
 
-.nts-logo-text {
+.nts-logo-img {
   position: relative;
-  font-size: 18px;
-  font-weight: 900;
-  color: #fff;
-  letter-spacing: -0.02em;
-  text-shadow: 0 2px 8px rgba(0, 0, 0, 0.3);
+  width: 45%;
+  height: auto;
+  filter: drop-shadow(0 2px 8px rgba(0, 0, 0, 0.3));
   user-select: none;
 }
 
