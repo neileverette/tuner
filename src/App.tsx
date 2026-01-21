@@ -1,25 +1,60 @@
-import { useState, useEffect, useCallback, useRef } from 'react'
+import { useState, useEffect, useCallback, useRef, useMemo } from 'react'
 import './App.css'
 import ChannelCarousel from './components/ChannelCarousel'
 import PlayerControls from './components/PlayerControls'
 import StationPicker from './components/StationPicker'
+import SortDropdown from './components/SortDropdown'
 import HeroArtwork from './components/HeroArtwork'
 import SplashScreen from './components/SplashScreen'
 import Instructions from './components/Instructions'
-import { useChannels, useNowPlaying, useFavorites } from './hooks'
+import { useChannels, useNowPlaying, useFavorites, useGenreFilter } from './hooks'
+import type { SortOption } from './types'
+import { sortChannels, filterChannelsByGenre } from './utils'
+import GenreFilter from './components/GenreFilter'
 
 function App() {
   const { channels, isLoading, error, refetch, getStreamUrl } = useChannels()
   const { isFavorite, toggleFavorite } = useFavorites()
-  const [selectedIndex, setSelectedIndex] = useState(() => {
-    const saved = localStorage.getItem('tuner-selected-index')
-    return saved ? parseInt(saved, 10) : 0
+  const {
+    enabledGenres,
+    enableGenre,
+    disableGenre,
+    enableAll,
+    isFiltering,
+    enabledCount,
+  } = useGenreFilter()
+  const [sortOption, setSortOption] = useState<SortOption>(() => {
+    const saved = localStorage.getItem('tuner-sort-option')
+    return (saved === 'station' || saved === 'genre' || saved === 'popularity') ? saved : 'station'
+  })
+  const [selectedChannelId, setSelectedChannelId] = useState<string | null>(() => {
+    return localStorage.getItem('tuner-selected-channel-id')
   })
   const [isPlaying, setIsPlaying] = useState(false)
 
+  // Filter channels by genre, then sort
+  const filteredChannels = useMemo(() => {
+    return filterChannelsByGenre(channels, enabledGenres)
+  }, [channels, enabledGenres])
+
+  const sortedChannels = useMemo(() => {
+    return sortChannels(filteredChannels, sortOption)
+  }, [filteredChannels, sortOption])
+
+  // Persist sort option changes
+  useEffect(() => {
+    localStorage.setItem('tuner-sort-option', sortOption)
+  }, [sortOption])
+
+  // Compute selected index from channel ID (stable across sort changes)
+  const selectedIndex = useMemo(() => {
+    if (!selectedChannelId) return 0
+    const index = sortedChannels.findIndex(ch => ch.id === selectedChannelId)
+    return index >= 0 ? index : 0
+  }, [sortedChannels, selectedChannelId])
+
   // Get selected channel for now-playing polling
-  const selectedChannel = channels[selectedIndex]
-  const selectedChannelId = selectedChannel?.id ?? null
+  const selectedChannel = sortedChannels[selectedIndex]
   const { nowPlaying } = useNowPlaying(selectedChannelId, { enabled: isPlaying })
   const [currentTrack, setCurrentTrack] = useState('')
   const [currentImage, setCurrentImage] = useState(() => {
@@ -67,45 +102,57 @@ function App() {
   }, [showSplash])
 
   // Restore initial state from channels when loaded
-  // Also handles migration: if saved index is out of bounds (e.g., channel list changed), reset to 0
+  // Handles migration from old index-based storage to channel ID
   useEffect(() => {
-    if (channels.length === 0) return
-    const savedIndex = localStorage.getItem('tuner-selected-index')
-    const index = savedIndex ? parseInt(savedIndex, 10) : 0
+    if (sortedChannels.length === 0) return
 
-    // Validate index is within bounds
-    const validIndex = index >= 0 && index < channels.length ? index : 0
-    if (validIndex !== selectedIndex) {
-      setSelectedIndex(validIndex)
-      localStorage.setItem('tuner-selected-index', validIndex.toString())
+    // If we don't have a selected channel ID, try to migrate from old index or default to first
+    if (!selectedChannelId) {
+      const savedIndex = localStorage.getItem('tuner-selected-index')
+      const index = savedIndex ? parseInt(savedIndex, 10) : 0
+      const validIndex = index >= 0 && index < sortedChannels.length ? index : 0
+      const channel = sortedChannels[validIndex]
+      if (channel) {
+        setSelectedChannelId(channel.id)
+        localStorage.setItem('tuner-selected-channel-id', channel.id)
+      }
     }
 
-    const channel = channels[validIndex]
+    // Validate selected channel ID still exists
+    const channelExists = sortedChannels.some(ch => ch.id === selectedChannelId)
+    if (selectedChannelId && !channelExists) {
+      const firstChannel = sortedChannels[0]
+      setSelectedChannelId(firstChannel.id)
+      localStorage.setItem('tuner-selected-channel-id', firstChannel.id)
+    }
+
+    // Set initial image if not set
+    const channel = sortedChannels[selectedIndex]
     if (channel && !currentImage) {
       setCurrentImage(channel.image.large)
       localStorage.setItem('tuner-current-image', channel.image.large)
     }
-  }, [channels, currentImage, selectedIndex])
+  }, [sortedChannels, currentImage, selectedChannelId, selectedIndex])
 
   // Play channel with debounced audio loading
   const playChannel = useCallback((index: number) => {
-    if (!channels[index]) return
+    const channel = sortedChannels[index]
+    if (!channel) return
 
-    // Update selection immediately
-    setSelectedIndex((prevIndex) => {
-      // Determine direction based on previous index
-      const direction = index > prevIndex ? 'right' : 'left'
-      setTransitionDirection(direction)
-      return index
-    })
+    // Determine direction based on previous index
+    const direction = index > selectedIndex ? 'right' : 'left'
+    setTransitionDirection(direction)
+
+    // Update selection by channel ID (stable across sorts)
+    setSelectedChannelId(channel.id)
     setCurrentTrack('')  // Will be populated by useNowPlaying
 
     // Save to localStorage
-    localStorage.setItem('tuner-selected-index', index.toString())
-    localStorage.setItem('tuner-current-image', channels[index].image.large)
+    localStorage.setItem('tuner-selected-channel-id', channel.id)
+    localStorage.setItem('tuner-current-image', channel.image.large)
 
     // Trigger image transition
-    const newImage = channels[index].image.large
+    const newImage = channel.image.large
     setCurrentImage((prevImage) => {
       if (newImage !== prevImage) {
         setPrevImage(prevImage)
@@ -126,7 +173,7 @@ function App() {
     // Debounce the actual audio loading - wait for user to stop pressing keys
     playTimeoutRef.current = window.setTimeout(() => {
       if (audioRef.current) {
-        const proxyUrl = getStreamUrl(channels[index])
+        const proxyUrl = getStreamUrl(channel)
         console.log('Playing:', proxyUrl)
         audioRef.current.src = proxyUrl
         audioRef.current.volume = 1.0
@@ -147,7 +194,7 @@ function App() {
         }
       }
     }, 300)
-  }, [channels, getStreamUrl])
+  }, [sortedChannels, selectedIndex, getStreamUrl])
 
   // Control functions
   const handlePlayPause = useCallback(() => {
@@ -157,14 +204,14 @@ function App() {
       audioRef.current.pause()
       setIsPlaying(false)
     } else {
-      if (!audioRef.current.src && channels[selectedIndex]) {
+      if (!audioRef.current.src && sortedChannels[selectedIndex]) {
         playChannel(selectedIndex)
       } else {
         audioRef.current.play()
         setIsPlaying(true)
       }
     }
-  }, [isPlaying, channels, selectedIndex, playChannel])
+  }, [isPlaying, sortedChannels, selectedIndex, playChannel])
 
   // Navigate channels - stop at boundaries, no wrapping
   const handleChannelPrev = useCallback(() => {
@@ -174,10 +221,10 @@ function App() {
   }, [selectedIndex, playChannel])
 
   const handleChannelNext = useCallback(() => {
-    if (selectedIndex < channels.length - 1) {
+    if (selectedIndex < sortedChannels.length - 1) {
       playChannel(selectedIndex + 1)
     }
-  }, [selectedIndex, channels.length, playChannel])
+  }, [selectedIndex, sortedChannels.length, playChannel])
 
   // Keyboard navigation
   useEffect(() => {
@@ -276,18 +323,39 @@ function App() {
         </div>
       )}
 
-      {/* Station Count - just above carousel */}
+      {/* Station Count - left aligned */}
       <div
         className={`station-count ${contentVisible ? 'visible' : ''}`}
         onClick={() => setShowStationPicker(true)}
       >
-        {isLoading ? 'Loading stations...' : channels.length > 0 ? `${channels.length} stations` : 'No stations available'}
+        {isLoading ? 'Loading stations...' :
+          sortedChannels.length > 0
+            ? `${sortedChannels.length} stations${isFiltering ? ' (filtered)' : ''}`
+            : enabledCount === 0
+              ? 'No genres selected'
+              : 'No stations available'}
         <span className="material-symbols-outlined menu-icon">menu_open</span>
       </div>
 
+      {/* Genre Filter & Sort - above carousel */}
+      {contentVisible && (
+        <div className="genre-filter-row">
+          <SortDropdown
+            value={sortOption}
+            onChange={setSortOption}
+          />
+          <GenreFilter
+            enabledGenres={enabledGenres}
+            onEnableGenre={enableGenre}
+            onDisableGenre={disableGenre}
+            onEnableAll={enableAll}
+          />
+        </div>
+      )}
+
       {/* Channel Carousel */}
       <ChannelCarousel
-        channels={channels}
+        channels={sortedChannels}
         selectedIndex={selectedIndex}
         onSelectChannel={playChannel}
         visible={contentVisible}
@@ -299,7 +367,7 @@ function App() {
       {/* Station Picker Dropdown */}
       {showStationPicker && (
         <StationPicker
-          channels={channels}
+          channels={sortedChannels}
           selectedIndex={selectedIndex}
           onSelectChannel={(index) => {
             playChannel(index)
@@ -317,6 +385,8 @@ function App() {
         currentTrack={currentTrack}
         isPlaying={isPlaying}
         onPlayPause={handlePlayPause}
+        onPrev={handleChannelPrev}
+        onNext={handleChannelNext}
         onOpenStationPicker={() => setShowStationPicker(true)}
         visible={contentVisible}
       />
