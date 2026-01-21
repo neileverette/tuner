@@ -478,13 +478,14 @@
 
 .nts-logo-blur {
   position: absolute;
-  font-size: 42px;
+  font-size: 28px;
   font-weight: 900;
   color: #fff;
   letter-spacing: -0.02em;
-  opacity: 0.2;
-  filter: blur(12px);
+  opacity: 0.35;
+  filter: blur(6px);
   user-select: none;
+  transform: rotate(-15deg);
 }
 
 .nts-logo-text {
