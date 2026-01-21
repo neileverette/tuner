@@ -382,6 +382,32 @@
   height: 80px;
 }
 
+.carousel-item.selected .carousel-item-image-wrapper::before {
+  content: '';
+  position: absolute;
+  inset: -3px;
+  border-radius: 6px;
+  padding: 3px;
+  background: conic-gradient(
+    from 90deg,
+    rgba(96, 0, 114, 1) 0deg,
+    rgba(255, 0, 0, 1) 40deg,
+    rgba(255, 192, 0, 1) 131deg,
+    rgba(151, 248, 19, 1) 192deg,
+    rgba(2, 160, 251, 1) 256deg,
+    rgba(10, 171, 240, 1) 287deg,
+    rgba(10, 0, 178, 1) 338deg,
+    rgba(96, 0, 114, 1) 360deg
+  );
+  -webkit-mask:
+    linear-gradient(#fff 0 0) content-box,
+    linear-gradient(#fff 0 0);
+  -webkit-mask-composite: xor;
+  mask-composite: exclude;
+  z-index: 0;
+  pointer-events: none;
+}
+
 .carousel-item img:not(.nts-logo-img):not(.nts-logo-blur):not(.kexp-logo-container img) {
   width: 100%;
   height: 100%;
@@ -398,7 +424,7 @@
 }
 
 .carousel-item.selected img:not(.nts-logo-img):not(.nts-logo-blur) {
-  box-shadow: 0 0 0 3px #fff;
+  /* gradient outline handled by wrapper ::before */
 }
 
 .kexp-logo-container img {
@@ -446,7 +472,7 @@
 }
 
 .carousel-item.selected .kexp-logo-container {
-  box-shadow: 0 0 0 3px #fff;
+  /* gradient outline handled by wrapper ::before */
 }
 
 .kexp-logo-container img {
@@ -481,7 +507,7 @@
 }
 
 .carousel-item.selected .nts-logo-container {
-  box-shadow: 0 0 0 3px #fff;
+  /* gradient outline handled by wrapper ::before */
 }
 
 .nts-logo-blur {
