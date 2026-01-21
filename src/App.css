@@ -398,7 +398,7 @@
 }
 
 .carousel-item.selected img:not(.nts-logo-img):not(.nts-logo-blur) {
-  box-shadow: 0 0 0 4px #fff;
+  box-shadow: 0 0 0 3px #fff;
 }
 
 .kexp-logo-container img {
@@ -446,7 +446,7 @@
 }
 
 .carousel-item.selected .kexp-logo-container {
-  box-shadow: 0 0 0 4px #fff;
+  box-shadow: 0 0 0 3px #fff;
 }
 
 .kexp-logo-container img {
@@ -481,7 +481,7 @@
 }
 
 .carousel-item.selected .nts-logo-container {
-  box-shadow: 0 0 0 4px #fff;
+  box-shadow: 0 0 0 3px #fff;
 }
 
 .nts-logo-blur {
