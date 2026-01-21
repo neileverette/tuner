@@ -375,6 +375,7 @@
   position: relative;
   width: 64px;
   height: 64px;
+  overflow: visible;
 }
 
 .carousel-item.selected .carousel-item-image-wrapper {
@@ -411,8 +412,8 @@
 .carousel-item.selected .carousel-item-image-wrapper::after {
   content: '';
   position: absolute;
-  inset: -6px;
-  border-radius: 8px;
+  inset: -8px;
+  border-radius: 10px;
   background: conic-gradient(
     from 90deg,
     rgba(96, 0, 114, 1) 0deg,
@@ -424,8 +425,8 @@
     rgba(10, 0, 178, 1) 338deg,
     rgba(96, 0, 114, 1) 360deg
   );
-  filter: blur(8px);
-  opacity: 0.6;
+  filter: blur(5px);
+  opacity: 0.7;
   z-index: -1;
   pointer-events: none;
 }
