@@ -212,3 +212,311 @@ Both streams converge at Phase 6, which requires outputs from both.
 
 ---
 *Created: 2026-01-19*
+
+---
+
+# Milestone 2: Station Sorting
+
+## Overview
+
+Add sorting capabilities to both grid (carousel) and list (station picker) views. Users can sort stations by name, genre, or popularity via a dropdown control.
+
+## Domain Expertise
+
+- React state management for sort preferences
+- Array sorting with multiple criteria
+- CSS glassmorphism (backdrop-filter, rgba backgrounds)
+- localStorage persistence patterns
+
+## Phases
+
+| # | Phase | Depends On | Research |
+|---|-------|------------|----------|
+| 9 | Sort State & Logic | - | No |
+| 10 | Sort Dropdown UI | Phase 9 | No |
+| 11 | Apply Sorting to Views | Phase 10 | No |
+| 12 | Persistence & Polish | Phase 11 | No |
+
+## Phase Details
+
+### Phase 9: Sort State & Logic
+**Goal**: Create sorting state management and sorting functions for all three sort modes
+**Depends on**: Nothing
+**Research**: No
+
+Key work:
+- Define `SortOption` type: `'station' | 'genre' | 'popularity'`
+- Create `sortChannels()` utility function with logic for each mode:
+  - Station: alphabetical by `title`
+  - Genre: alphabetical by `genre`, then by `title`
+  - Popularity: by `listeners` descending (null values sorted to top)
+- Add sort state to App.tsx (default: 'station')
+- Export sorting utilities from a new `src/utils/sorting.ts`
+
+Outputs:
+- `src/utils/sorting.ts` with sorting logic
+- Sort state in App.tsx
+- TypeScript types for sort options
+
+---
+
+### Phase 10: Sort Dropdown UI
+**Goal**: Create glassmorphism dropdown component positioned right of station count
+**Depends on**: Phase 9 (sort state must exist)
+**Research**: No
+
+Key work:
+- Create `SortDropdown.tsx` component
+- Style per spec:
+  - Height: ~40px
+  - Background: semi-transparent black with backdrop blur
+  - Border-radius: rounded (20px for pill shape)
+  - Position: inline-flex, right of station count
+- Dropdown options: "Station", "Genre", "Popularity"
+- Wire onChange to update sort state in App.tsx
+- Add chevron/arrow icon indicator
+
+Outputs:
+- `src/components/SortDropdown.tsx`
+- CSS styles in App.css
+- Integrated into App.tsx header area
+
+---
+
+### Phase 11: Apply Sorting to Views
+**Goal**: Apply selected sort order to both ChannelCarousel (grid) and StationPicker (list)
+**Depends on**: Phase 10 (dropdown must be functional)
+**Research**: No
+
+Key work:
+- Sort `channels` array before passing to ChannelCarousel
+- Sort `channels` array before passing to StationPicker
+- Ensure sorting respects current filter state (if any filters active)
+- Maintain selected channel reference after re-sort (by ID, not index)
+- Test all three sort modes in both views
+
+Outputs:
+- Sorted carousel view
+- Sorted list view
+- Stable selection after sort change
+
+---
+
+### Phase 12: Persistence & Polish
+**Goal**: Persist sort preference and add finishing touches
+**Depends on**: Phase 11 (sorting must work)
+**Research**: No
+
+Key work:
+- Save sort preference to localStorage
+- Restore sort preference on app load
+- Add visual feedback for current sort selection
+- Ensure dropdown works on mobile (touch-friendly)
+- Test edge cases: empty states, single station, all null listeners
+
+Outputs:
+- Persistent sort preference
+- Polished dropdown interactions
+- Mobile-friendly implementation
+
+---
+
+## Progress
+
+| Phase | Plans | Status | Completed |
+|-------|-------|--------|-----------|
+| 9. Sort State & Logic | 1/1 | Complete | 2026-01-20 |
+| 10. Sort Dropdown UI | 1/1 | Complete | 2026-01-20 |
+| 11. Apply Sorting to Views | 1/1 | Complete | 2026-01-20 |
+| 12. Persistence & Polish | 1/1 | Complete | 2026-01-20 |
+
+**Milestone 2 Progress:** 100% (4 of 4 phases complete) ✓
+
+**Note:** Phase 11 was completed as part of Phase 9 - the `sortedChannels` array is already passed to both ChannelCarousel and StationPicker.
+
+## Design Specifications
+
+### Sort Dropdown
+- **Height**: 40px
+- **Background**: `rgba(0, 0, 0, 0.5)` or similar semi-transparent black
+- **Backdrop filter**: `blur(10px)` for glassmorphism effect
+- **Border-radius**: 20px (pill shape)
+- **Position**: Right of station count, inline
+- **Font**: Match existing UI (likely 14px, white text)
+
+### Sort Options
+| Option | Sort Logic |
+|--------|-----------|
+| Station | Alphabetical by `channel.title` |
+| Genre | Alphabetical by `channel.genre`, then `channel.title` |
+| Popularity | Descending by `channel.listeners` (null → top) |
+
+---
+*Created: 2026-01-20*
+
+---
+
+# Milestone 3: NTS Radio Integration
+
+## Overview
+
+Add NTS Radio as a third source with 2 live channels and 15 "Infinite Mixtapes" (curated endless loops). NTS is a London-based underground radio station known for exceptional curation of electronic, experimental, and global music.
+
+## Domain Expertise
+
+- NTS Live API (https://www.nts.live/api/v2/live)
+- Stream URL patterns for live channels and mixtapes
+- Express.js CORS proxy extension
+- Source registry patterns (established in Phase 2)
+- Genre mapping to existing taxonomy
+
+## Source Details
+
+**Live Channels (2):**
+- NTS 1: Live broadcasts from London studio
+- NTS 2: Live broadcasts from London studio
+
+**Infinite Mixtapes (15):**
+| Mixtape | Stream URL | Genre |
+|---------|-----------|-------|
+| Poolside | `stream-mixtape-geo.ntslive.net/mixtape` | Balearic/Downtempo |
+| Slow Focus | `stream-mixtape-geo.ntslive.net/mixtape4` | Ambient/Drone |
+| Low Key | `stream-mixtape-geo.ntslive.net/mixtape5` | Lo-fi Hip-Hop |
+| Expansions | `stream-mixtape-geo.ntslive.net/mixtape3` | Psychedelic Electronic |
+| + 11 more | Various | Various |
+
+## Phases
+
+| # | Phase | Depends On | Research |
+|---|-------|------------|----------|
+| 13 | NTS API Research | - | Yes |
+| 14 | NTS Source Configuration | Phase 13 | No |
+| 15 | NTS Backend Proxy | Phase 14 | No |
+| 16 | NTS Integration Testing | Phase 15 | No |
+
+## Phase Details
+
+### Phase 13: NTS API Research
+**Goal**: Research NTS Live API, discover all stream URLs, and document now-playing metadata
+**Depends on**: Nothing
+**Research**: Yes - need to explore NTS API responses and all 15 Infinite Mixtape URLs
+
+Key work:
+- Fetch and analyze https://www.nts.live/api/v2/live for live channel data
+- Document live channel stream URLs and formats
+- Discover all 15 Infinite Mixtape stream URLs
+- Document now-playing/metadata endpoints if available
+- Identify any CORS requirements or rate limits
+- Map NTS content to existing genre taxonomy
+
+Outputs:
+- 13-RESEARCH.md with API documentation
+- Complete list of all stream URLs
+- Genre mapping recommendations
+
+---
+
+### Phase 14: NTS Source Configuration
+**Goal**: Create NTS source configuration following established patterns
+**Depends on**: Phase 13 (API research must be complete)
+**Research**: No
+
+Key work:
+- Create `src/config/sources/nts.ts` with channel definitions
+- Define 2 live channels with stream URLs
+- Define 15 Infinite Mixtape channels with stream URLs
+- Map each channel to normalized genre taxonomy
+- Add NTS to source registry in `src/config/sources/index.ts`
+- Define TypeScript types for NTS-specific metadata
+
+Outputs:
+- `src/config/sources/nts.ts` (17 channel definitions)
+- Updated `src/config/sources/index.ts`
+- Genre mappings for all NTS channels
+
+---
+
+### Phase 15: NTS Backend Proxy
+**Goal**: Add NTS stream proxying to Express backend
+**Depends on**: Phase 14 (source config must exist)
+**Research**: No
+
+Key work:
+- Add NTS live stream proxy: `/api/nts/live/:channel`
+- Add NTS mixtape proxy: `/api/nts/mixtape/:mixtapeId`
+- Add NTS now-playing proxy if API available: `/api/nts/now-playing/:channel`
+- Handle NTS-specific headers and CORS requirements
+- Test all stream endpoints
+
+Outputs:
+- NTS proxy routes in `server/index.js`
+- Verified stream proxying for all 17 channels
+
+---
+
+### Phase 16: NTS Integration Testing
+**Goal**: Verify NTS channels work end-to-end in the app
+**Depends on**: Phase 15 (proxy must be working)
+**Research**: No
+
+Key work:
+- Verify NTS channels appear in `/api/channels` response
+- Test live channel playback in app
+- Test all 15 Infinite Mixtape playback
+- Verify genre filtering includes NTS channels
+- Verify source-view mode groups NTS correctly
+- Test now-playing metadata display (if available)
+- Performance testing with 17 new channels
+
+Outputs:
+- All NTS channels playable
+- Integration with existing genre/source views
+- No regression in SomaFM/Radio Paradise functionality
+
+---
+
+## Progress
+
+| Phase | Plans | Status | Completed |
+|-------|-------|--------|-----------|
+| 13. NTS API Research | 0/? | Not Started | - |
+| 14. NTS Source Configuration | 0/? | Not Started | - |
+| 15. NTS Backend Proxy | 0/? | Not Started | - |
+| 16. NTS Integration Testing | 0/? | Not Started | - |
+
+**Milestone 3 Progress:** 0% (0 of 4 phases complete)
+
+## NTS Stream Reference
+
+```javascript
+// Live Channels (discovered via API)
+const ntsLiveChannels = [
+  { name: "NTS 1", channel: 1 },
+  { name: "NTS 2", channel: 2 }
+];
+
+// Infinite Mixtapes (known URLs)
+const ntsInfiniteMixtapes = [
+  { name: "Poolside", url: "https://stream-mixtape-geo.ntslive.net/mixtape", genre: "Balearic/Downtempo" },
+  { name: "Slow Focus", url: "https://stream-mixtape-geo.ntslive.net/mixtape4", genre: "Ambient/Drone" },
+  { name: "Low Key", url: "https://stream-mixtape-geo.ntslive.net/mixtape5", genre: "Lo-fi Hip-Hop" },
+  { name: "Expansions", url: "https://stream-mixtape-geo.ntslive.net/mixtape3", genre: "Psychedelic Electronic" }
+  // + 11 more to be discovered in Phase 13
+];
+```
+
+## Genre Mapping (Preliminary)
+
+| NTS Channel | Suggested Genre(s) |
+|-------------|-------------------|
+| NTS 1 (Live) | eclectic |
+| NTS 2 (Live) | eclectic |
+| Poolside | chillout, ambient |
+| Slow Focus | ambient |
+| Low Key | hiphop |
+| Expansions | electronic |
+
+Final mappings to be determined in Phase 13 research.
+
+---
+*Created: 2026-01-21*

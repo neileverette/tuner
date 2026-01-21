@@ -5,14 +5,15 @@
 See: .planning/PROJECT.md (Genre Organizer)
 
 **Core value:** Multi-source radio aggregator with unified genre classification
-**Current focus:** Phase 5 complete, Phase 6 ready
+**Current focus:** Phase 8 - Genre Filtering (on filtering branch)
 
 ## Current Position
 
-Phase: 5 of 8 (UI Refactoring) - COMPLETE
-Plan: 05-03-PLAN.md complete
-Status: All UI components extracted; App.tsx reduced from 452 to 316 lines
-Last activity: 2026-01-19 - Completed 05-03-PLAN.md
+Phase: 8 of 8 (Genre Filtering & Persistence) - IN PROGRESS
+Plan: 08-01-PLAN.md created
+Status: Starting genre filtering implementation (skipping Phases 6-7 as not required)
+Last activity: 2026-01-20 - Created 08-01-PLAN.md
+Branch: filtering
 
 Progress: [######    ] 62.5%
 
@@ -27,7 +28,7 @@ Progress: [######    ] 62.5%
 | 5 | UI Refactoring | **Complete** | - |
 | 6 | Genre Panel Updates | Ready | Phase 4, 5 |
 | 7 | View Mode Toggle | Not Started | Phase 6 |
-| 8 | Genre Filtering & Persistence | Not Started | Phase 7 |
+| 8 | Genre Filtering & Persistence | **In Progress** | Phase 7 (soft) |
 
 ## Parallel Workstreams
 
@@ -117,12 +118,20 @@ Resume: Create Phase 6 plan for Genre Panel Updates
 
 ## Next Steps
 
-1. **Phase 6:** Create plan for Genre Panel Updates
-   - Create GenrePanel.tsx component
-   - Consume /api/channels endpoint
-   - Display channels grouped by genre with source indicators
-2. **Phase 7:** View Mode Toggle (after Phase 6)
-3. **Phase 8:** Genre Filtering & Persistence (after Phase 7)
+1. **Milestone 3 - Phase 13:** NTS API Research
+   - Fetch and analyze NTS Live API
+   - Document all stream URLs (2 live + 15 Infinite Mixtapes)
+   - Map NTS content to genre taxonomy
+   - Create 13-RESEARCH.md
+
+Note: Milestone 1 Phases 6-7 deferred. Phase 8 (filtering) on separate branch.
+
+## Active Milestone
+
+**Milestone 3: NTS Radio Integration** (feature/nts-radio-integration branch)
+- Add NTS Radio as third source (London-based underground radio)
+- 2 live channels + 15 Infinite Mixtapes
+- Phases 13-16
 
 ## Phase 5 Summary
 
