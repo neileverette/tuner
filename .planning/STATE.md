@@ -118,24 +118,23 @@ Resume: Create Phase 6 plan for Genre Panel Updates
 
 ## Next Steps
 
-1. **Milestone 3 - Phase 16:** NTS Integration Testing
-   - Verify NTS channels appear in `/api/channels` response
-   - Test playback of all 18 NTS channels in app
+1. **Milestone 3 Complete** - Merge `feature/nts-radio-integration` to main
+2. Resume Milestone 1 Phase 8 (Genre Filtering) on `filtering` branch
 
 Note: Milestone 1 Phases 6-7 deferred. Phase 8 (filtering) on separate branch.
 
-## Active Milestone
+## Completed Milestone
 
-**Milestone 3: NTS Radio Integration** (feature/nts-radio-integration branch)
-- Add NTS Radio as third source (London-based underground radio)
+**Milestone 3: NTS Radio Integration** ✓ (feature/nts-radio-integration branch)
+- Added NTS Radio as third source (London-based underground radio)
 - 2 live channels + 16 Infinite Mixtapes = **18 total channels**
-- Phases 13-16
+- Total app channels: **71** (SomaFM 49 + Radio Paradise 4 + NTS 18)
 
 ### Milestone 3 Progress
 - [x] Phase 13: NTS API Research (Complete)
 - [x] Phase 14: NTS Source Configuration (Complete)
 - [x] Phase 15: NTS Backend Proxy (Complete)
-- [ ] Phase 16: NTS Integration Testing (Ready)
+- [x] Phase 16: NTS Integration Testing (Complete)
 
 ## Phase 5 Summary
 
