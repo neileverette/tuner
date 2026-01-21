@@ -474,19 +474,19 @@
 
 .nts-logo-blur {
   position: absolute;
-  width: 50%;
+  width: 28px;
   height: auto;
-  opacity: 0.3;
-  filter: blur(3px);
+  opacity: 0.35;
+  filter: blur(2px);
   user-select: none;
   transform: rotate(-15deg);
 }
 
 .nts-logo-img {
   position: relative;
-  width: 35%;
+  width: 20px;
   height: auto;
-  filter: drop-shadow(0 2px 8px rgba(0, 0, 0, 0.3));
+  filter: drop-shadow(0 1px 4px rgba(0, 0, 0, 0.3));
   user-select: none;
 }
 
