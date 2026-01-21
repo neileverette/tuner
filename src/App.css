@@ -222,6 +222,7 @@
   align-items: center;
   gap: 6px;
   padding-left: 24px;
+  margin-bottom: 4px;
   font-size: 18px;
   color: rgba(255, 255, 255, 0.6);
   position: relative;
@@ -387,9 +388,9 @@
 .carousel-item.selected .carousel-item-image-wrapper::before {
   content: '';
   position: absolute;
-  inset: -3px;
-  border-radius: 6px;
-  padding: 3px;
+  inset: -2px;
+  border-radius: 5px;
+  padding: 2px;
   background: conic-gradient(
     from 90deg,
     rgba(96, 0, 114, 1) 0deg,
@@ -1006,9 +1007,9 @@
 .control-btn.play-btn::before {
   content: '';
   position: absolute;
-  inset: -3px;
+  inset: -4px;
   border-radius: 50%;
-  padding: 3px;
+  padding: 4px;
   background: conic-gradient(
     from 90deg,
     rgba(96, 0, 114, 1) 0deg,
@@ -1308,7 +1309,7 @@
   position: relative;
   z-index: 100;
   padding: 0 24px;
-  margin-bottom: 16px;
+  margin-bottom: 8px;
   display: flex;
   align-items: center;
   gap: 8px;
@@ -1482,4 +1483,130 @@
     right: 10px;
     width: auto;
   }
+}
+
+/* Welcome Banner */
+.welcome-banner {
+  position: fixed;
+  left: 24px;
+  top: 5%;
+  width: 66.67%;
+  max-width: 800px;
+  background: rgba(0, 0, 0, 0.75);
+  backdrop-filter: blur(20px);
+  -webkit-backdrop-filter: blur(20px);
+  border-radius: 16px;
+  padding: 32px 40px;
+  color: #fff;
+  z-index: 100;
+  pointer-events: auto;
+  opacity: 0;
+  transform: translateY(10px);
+  animation: bannerIn 0.4s ease forwards;
+  animation-delay: 0.3s;
+}
+
+@keyframes bannerIn {
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+.welcome-banner .welcome-close {
+  position: absolute;
+  top: 16px;
+  right: 16px;
+  width: 28px;
+  height: 28px;
+  border: none;
+  background: transparent;
+  color: rgba(255, 255, 255, 0.7);
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 0;
+  border-radius: 50%;
+  transition: color 0.15s ease, background 0.15s ease;
+}
+
+.welcome-banner .welcome-close:hover {
+  color: #fff;
+  background: rgba(255, 255, 255, 0.1);
+}
+
+.welcome-banner .welcome-close svg {
+  width: 18px;
+  height: 18px;
+}
+
+.welcome-banner .welcome-header {
+  display: flex;
+  align-items: center;
+  margin-bottom: 20px;
+}
+
+.welcome-banner .welcome-logo-img {
+  height: 32px;
+  width: auto;
+}
+
+.welcome-banner .welcome-content h1 {
+  font-size: 24px;
+  font-weight: 600;
+  margin: 0 0 16px 0;
+  color: #fff;
+}
+
+.welcome-banner .welcome-tagline {
+  font-size: 15px;
+  line-height: 1.6;
+  margin: 0 0 12px 0;
+  color: rgba(255, 255, 255, 0.85);
+}
+
+.welcome-banner .welcome-description {
+  font-size: 15px;
+  line-height: 1.6;
+  margin: 0 0 20px 0;
+  color: rgba(255, 255, 255, 0.85);
+}
+
+.welcome-banner .welcome-controls {
+  border-top: 1px solid rgba(255, 255, 255, 0.15);
+  padding-top: 16px;
+}
+
+.welcome-banner .welcome-controls p {
+  margin: 0 0 6px 0;
+  font-size: 13px;
+  color: rgba(255, 255, 255, 0.9);
+}
+
+.welcome-banner .welcome-controls strong {
+  font-weight: 600;
+  color: #fff;
+}
+
+.welcome-banner .welcome-hint {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  color: rgba(255, 255, 255, 0.6) !important;
+  font-size: 12px !important;
+}
+
+.welcome-banner .welcome-dont-show {
+  padding: 0;
+  background: none;
+  border: none;
+  color: rgba(255, 255, 255, 0.4);
+  font-size: 12px;
+  cursor: pointer;
+  transition: color 0.15s ease;
+}
+
+.welcome-banner .welcome-dont-show:hover {
+  color: rgba(255, 255, 255, 0.7);
 }

@@ -6,7 +6,7 @@ import StationPicker from './components/StationPicker'
 import SortDropdown from './components/SortDropdown'
 import HeroArtwork from './components/HeroArtwork'
 import SplashScreen from './components/SplashScreen'
-import Instructions from './components/Instructions'
+import WelcomeModal from './components/WelcomeModal'
 import { useChannels, useNowPlaying, useFavorites, useGenreFilter } from './hooks'
 import type { SortOption } from './types'
 import { sortChannels, filterChannelsByGenre } from './utils'
@@ -67,8 +67,8 @@ function App() {
   const [transitionDirection, setTransitionDirection] = useState<'left' | 'right'>('right')
   const [showStationPicker, setShowStationPicker] = useState(false)
   const [streamError, setStreamError] = useState<string | null>(null)
-  const [showInstructions, setShowInstructions] = useState(() => {
-    return localStorage.getItem('tuner-instructions-dismissed') !== 'true'
+  const [showWelcome, setShowWelcome] = useState(() => {
+    return localStorage.getItem('tuner-welcome-dismissed') !== 'true'
   })
   const [showSplash, setShowSplash] = useState(true)
   const [splashPhase, setSplashPhase] = useState<'visible' | 'fading' | 'hidden'>('visible')
@@ -297,8 +297,8 @@ function App() {
         }}
       />
 
-      {/* Header with logo */}
-      <header className={`app-header ${headerVisible ? 'visible' : ''}`}>
+      {/* Header with logo - hidden while welcome banner is showing */}
+      <header className={`app-header ${headerVisible && !showWelcome ? 'visible' : ''}`}>
         <img src="/tuner-logo.svg" alt="Tuner" className="header-logo" />
       </header>
 
@@ -323,13 +323,16 @@ function App() {
         prevNtsBgColor={prevNtsBgColor}
       />
 
-      {/* Instructions */}
-      {showInstructions && (
-        <Instructions
-          visible={contentVisible}
+      {/* Welcome Modal */}
+      {showWelcome && contentVisible && (
+        <WelcomeModal
+          visible={true}
           onDismiss={() => {
-            setShowInstructions(false)
-            localStorage.setItem('tuner-instructions-dismissed', 'true')
+            setShowWelcome(false)
+          }}
+          onDismissPermanently={() => {
+            setShowWelcome(false)
+            localStorage.setItem('tuner-welcome-dismissed', 'true')
           }}
         />
       )}
