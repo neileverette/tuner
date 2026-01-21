@@ -1193,7 +1193,8 @@
   outline: none;
 }
 
-.carousel-item-image-wrapper:hover .favorite-btn {
+.carousel-item-image-wrapper:hover .favorite-btn,
+.carousel-item.selected .favorite-btn {
   opacity: 1;
 }
 
