@@ -5,6 +5,8 @@ interface PlayerControlsProps {
   currentTrack: string
   isPlaying: boolean
   onPlayPause: () => void
+  onPrev: () => void
+  onNext: () => void
   onOpenStationPicker: () => void
   visible: boolean
 }
@@ -14,6 +16,8 @@ function PlayerControls({
   currentTrack,
   isPlaying,
   onPlayPause,
+  onPrev,
+  onNext,
   onOpenStationPicker,
   visible
 }: PlayerControlsProps) {
@@ -28,6 +32,9 @@ function PlayerControls({
       </div>
 
       <div className="playback-controls">
+        <button className="control-btn chevron-btn chevron-left" onClick={onPrev}>
+          <span className="material-symbols-outlined">chevron_left</span>
+        </button>
         <button className={`control-btn play-btn ${isPlaying ? 'playing' : ''}`} onClick={onPlayPause}>
           {isPlaying ? (
             <svg viewBox="0 0 24 24" fill="currentColor">
@@ -39,10 +46,17 @@ function PlayerControls({
             </svg>
           )}
         </button>
+        <button className="control-btn chevron-btn chevron-right" onClick={onNext}>
+          <span className="material-symbols-outlined">chevron_right</span>
+        </button>
       </div>
 
       <div className="listeners-info">
-        <span>{currentChannel?.listeners ?? 0} listeners</span>
+        <span>
+          {currentChannel?.listeners != null && currentChannel.listeners > 0
+            ? `${currentChannel.listeners.toLocaleString()} listeners`
+            : 'Lots of listeners'}
+        </span>
       </div>
     </div>
   )
