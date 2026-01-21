@@ -30,27 +30,28 @@ function getSourceBadgeLabel(source: 'kexp' | 'somafm' | 'rp' | 'nts'): string {
 // Radio Paradise logo as fallback when no album art available
 const RP_FALLBACK_IMAGE = 'https://img.radioparadise.com/logos/rp_logo_128.png'
 
-// Generate seeded random number from string
+// Generate seeded random number from string - using mulberry32 algorithm
 function seededRandom(seed: string, index: number): number {
-  let hash = 0
-  const str = seed + index
+  let h = 0
+  const str = seed + '_' + index
   for (let i = 0; i < str.length; i++) {
-    hash = ((hash << 5) - hash) + str.charCodeAt(i)
-    hash |= 0
+    h = Math.imul(h ^ str.charCodeAt(i), 2654435761)
   }
-  return Math.abs(hash % 100) / 100
+  h = Math.imul(h ^ (h >>> 16), 2654435761)
+  h = Math.imul(h ^ (h >>> 16), 2654435761)
+  return (h >>> 0) / 4294967296
 }
 
 // Generate random circles for NTS thumbnails
 function generateCircles(channelId: string): React.CSSProperties[] {
   const circles: React.CSSProperties[] = []
-  const numCircles = 3 + Math.floor(seededRandom(channelId, 999) * 4) // 3-6 circles
+  const numCircles = 3 + Math.floor(seededRandom(channelId, 0) * 4) // 3-6 circles
 
   for (let i = 0; i < numCircles; i++) {
-    const size = 20 + seededRandom(channelId, i * 10) * 60 // 20-80px
-    const left = seededRandom(channelId, i * 10 + 1) * 100 // 0-100%
-    const top = seededRandom(channelId, i * 10 + 2) * 100 // 0-100%
-    const opacity = 0.08 + seededRandom(channelId, i * 10 + 3) * 0.15 // 0.08-0.23
+    const size = 25 + seededRandom(channelId, i + 100) * 50 // 25-75%
+    const left = 10 + seededRandom(channelId, i + 200) * 80 // 10-90%
+    const top = 10 + seededRandom(channelId, i + 300) * 80 // 10-90%
+    const opacity = 0.1 + seededRandom(channelId, i + 400) * 0.2 // 0.1-0.3
 
     circles.push({
       position: 'absolute',
@@ -59,7 +60,7 @@ function generateCircles(channelId: string): React.CSSProperties[] {
       left: `${left}%`,
       top: `${top}%`,
       borderRadius: '50%',
-      background: 'rgba(255, 255, 255, ' + opacity + ')',
+      background: `rgba(255, 255, 255, ${opacity})`,
       transform: 'translate(-50%, -50%)',
       pointerEvents: 'none',
     })
