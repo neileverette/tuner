@@ -51,17 +51,17 @@ app.use(express.json());
 // Main: /aac-320, /flac, /mp3-128
 // Others: /mellow-320, /mellow-flac, /mellow-128, etc.
 const RP_CHANNELS = {
-  main:     { prefix: '' },
-  mellow:   { prefix: 'mellow-' },
-  eclectic: { prefix: 'eclectic-' },
-  global:   { prefix: 'global-' }
+  main:   { prefix: '' },
+  mellow: { prefix: 'mellow-' },
+  rock:   { prefix: 'rock-' },
+  global: { prefix: 'global-' }
 };
 
 // Quality suffixes differ for main vs other channels
 const RP_QUALITIES = {
-  'flac':    { main: 'flac',    other: 'flac',  contentType: 'audio/flac' },
-  'aac-320': { main: 'aac-320', other: '320',   contentType: 'audio/aac' },
-  'mp3-128': { main: 'mp3-128', other: '128',   contentType: 'audio/mpeg' }
+  'flac':    { main: 'flac',    other: 'flac', contentType: 'audio/flac' },
+  'aac-320': { main: 'aac-320', other: '320',  contentType: 'audio/aac' },
+  'mp3-192': { main: 'mp3-192', other: '192',  contentType: 'audio/mpeg' }
 };
 
 /**
@@ -100,7 +100,7 @@ app.get('/api/stream/rp/:channel/:quality', (req, res) => {
     return res.status(400).json({ error: 'Invalid channel. Valid: main, mellow, rock, global' });
   }
   if (!RP_QUALITIES[quality]) {
-    return res.status(400).json({ error: 'Invalid quality. Valid: flac, aac-320, mp3-128' });
+    return res.status(400).json({ error: 'Invalid quality. Valid: flac, aac-320, mp3-192' });
   }
 
   // Build URL: main uses different suffix pattern than other channels

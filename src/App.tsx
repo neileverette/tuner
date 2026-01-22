@@ -413,6 +413,15 @@ function App() {
         />
       )}
 
+      {/* Source Attribution */}
+      <div className={`welcome-sources ${contentVisible ? 'visible' : ''}`}>
+        <span className="welcome-sources-label">Streams from</span>
+        <a href="https://somafm.com/support/donate.html" target="_blank" rel="noopener noreferrer">SomaFM</a>
+        <a href="https://radioparadise.com/donate" target="_blank" rel="noopener noreferrer">Radio Paradise</a>
+        <a href="https://www.nts.live/gift-supporters" target="_blank" rel="noopener noreferrer">NTS Radio</a>
+        <a href="https://www.kexp.org/donate/" target="_blank" rel="noopener noreferrer">KEXP</a>
+      </div>
+
       {/* Bottom Controls */}
       <PlayerControls
         currentChannel={selectedChannel}

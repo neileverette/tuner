@@ -25,7 +25,7 @@ interface RPGetBlockResponse {
 const RP_CHANNELS: RPChannelDef[] = [
   { id: 'main', chan: 0, title: 'Main Mix', description: 'Eclectic mix of rock, world, electronic, and more', genre: 'Eclectic', streamPath: '' },
   { id: 'mellow', chan: 1, title: 'Mellow Mix', description: 'Relaxed, atmospheric, and chilled selections', genre: 'Ambient/Chillout', streamPath: 'mellow-' },
-  { id: 'eclectic', chan: 2, title: 'Rock Mix', description: 'Guitar-driven rock and alternative', genre: 'Rock/Alternative', streamPath: 'eclectic-' },
+  { id: 'rock', chan: 2, title: 'Rock Mix', description: 'Guitar-driven rock and alternative', genre: 'Rock/Alternative', streamPath: 'rock-' },
   { id: 'global', chan: 3, title: 'Global Mix', description: 'World music and international sounds', genre: 'World', streamPath: 'global-' },
 ];
 
@@ -85,10 +85,10 @@ export class RadioParadiseAdapter implements SourceAdapter {
   }
 
   getStreamUrl(channel: Channel, preferredFormat?: 'mp3' | 'aac' | 'flac'): string {
-    // Default to MP3 for browser compatibility (AAC/ADTS not widely supported)
+    // Default to AAC for better quality; MP3 as fallback
     const quality = preferredFormat === 'flac' ? 'flac'
-      : preferredFormat === 'aac' ? 'aac-320'
-      : 'mp3-128';
+      : preferredFormat === 'mp3' ? 'mp3-192'
+      : 'aac-320';
     return `${this.config.proxyBaseUrl}/${channel.sourceId}/${quality}`;
   }
 
@@ -126,8 +126,8 @@ export class RadioParadiseAdapter implements SourceAdapter {
   private getAvailableStreams(def: RPChannelDef): StreamQuality[] {
     return [
       { id: 'flac', format: 'flac', bitrate: null, label: 'FLAC (Lossless)', url: `http://stream.radioparadise.com/${def.streamPath}flac` },
-      { id: 'aac-320', format: 'aac', bitrate: 320, label: 'AAC 320kbps', url: `http://stream.radioparadise.com/${def.streamPath}aac-320` },
-      { id: 'mp3-128', format: 'mp3', bitrate: 128, label: 'MP3 128kbps', url: `http://stream.radioparadise.com/${def.streamPath}mp3-128` },
+      { id: 'aac-320', format: 'aac', bitrate: 320, label: 'AAC 320kbps', url: `http://stream.radioparadise.com/${def.streamPath}320` },
+      { id: 'mp3-192', format: 'mp3', bitrate: 192, label: 'MP3 192kbps', url: `http://stream.radioparadise.com/${def.streamPath}192` },
     ];
   }
 }

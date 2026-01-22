@@ -1647,6 +1647,13 @@
   display: flex;
   gap: 8px;
   align-items: center;
+  z-index: 10;
+  opacity: 0;
+  transition: opacity 0.6s ease;
+}
+
+.welcome-sources.visible {
+  opacity: 1;
 }
 
 .welcome-sources-label {
