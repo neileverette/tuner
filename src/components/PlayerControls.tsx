@@ -1,3 +1,4 @@
+import { useState, useEffect, useRef } from 'react'
 import type { Channel } from '../types/channel'
 
 interface PlayerControlsProps {
@@ -21,14 +22,42 @@ function PlayerControls({
   onOpenStationPicker,
   visible
 }: PlayerControlsProps) {
+  const [displayedChannel, setDisplayedChannel] = useState(currentChannel)
+  const [displayedTrack, setDisplayedTrack] = useState(currentTrack)
+  const [isTransitioning, setIsTransitioning] = useState(false)
+  const prevChannelId = useRef(currentChannel?.id)
+
+  useEffect(() => {
+    // Only animate when channel changes, not on initial load or track updates
+    if (currentChannel?.id !== prevChannelId.current && prevChannelId.current !== undefined) {
+      setIsTransitioning(true)
+
+      // After fade out, update content and fade in
+      const timeout = setTimeout(() => {
+        setDisplayedChannel(currentChannel)
+        setDisplayedTrack(currentTrack)
+        setIsTransitioning(false)
+      }, 150)
+
+      return () => clearTimeout(timeout)
+    } else {
+      // No animation for track updates on same channel
+      setDisplayedChannel(currentChannel)
+      setDisplayedTrack(currentTrack)
+    }
+    prevChannelId.current = currentChannel?.id
+  }, [currentChannel, currentTrack])
+
+  const trackText = displayedTrack && displayedTrack !== 'No track info' ? displayedTrack : '\u00A0'
+
   return (
     <div className={`controls ${visible ? 'visible' : ''}`}>
       <div className="track-info" onClick={onOpenStationPicker}>
-        <span className="playlist-name">
-          {currentChannel?.title || 'Select Station'}
+        <span className={`playlist-name ${isTransitioning ? 'transitioning' : ''}`}>
+          {displayedChannel?.title || 'Select Station'}
         </span>
-        <span className="song-name">{currentTrack || 'No track info'}</span>
-        <span className="artist">{currentChannel?.genre || ''}</span>
+        <span className={`song-name ${isTransitioning ? 'transitioning' : ''}`}>{trackText}</span>
+        <span className={`artist ${isTransitioning ? 'transitioning' : ''}`}>{displayedChannel?.genre || ''}</span>
       </div>
 
       <div className="playback-controls">

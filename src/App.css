@@ -952,11 +952,32 @@
   white-space: nowrap;
   overflow: hidden;
   text-overflow: ellipsis;
+  transition: opacity 0.15s ease, transform 0.15s ease;
+}
+
+.song-name.transitioning {
+  opacity: 0;
+  transform: translateY(4px);
 }
 
 .artist {
   font-size: 18px;
   color: rgba(255, 255, 255, 0.7);
+  transition: opacity 0.15s ease, transform 0.15s ease;
+}
+
+.artist.transitioning {
+  opacity: 0;
+  transform: translateY(4px);
+}
+
+.playlist-name.transitioning {
+  opacity: 0;
+  transform: translateY(4px);
+}
+
+.playlist-name {
+  transition: opacity 0.15s ease, transform 0.15s ease;
 }
 
 /* Playback Controls */
