@@ -48,7 +48,7 @@ function PlayerControls({
     prevChannelId.current = currentChannel?.id
   }, [currentChannel, currentTrack])
 
-  const trackText = displayedTrack && displayedTrack !== 'No track info' ? displayedTrack : '\u00A0'
+  const trackText = displayedTrack && displayedTrack !== 'No track info' ? displayedTrack : 'Grooving tune unknown'
 
   return (
     <div className={`controls ${visible ? 'visible' : ''}`}>

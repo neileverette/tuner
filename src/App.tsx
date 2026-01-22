@@ -358,45 +358,48 @@ function App() {
         </div>
       )}
 
-      {/* Station Count - left aligned */}
-      <div
-        className={`station-count ${contentVisible ? 'visible' : ''}`}
-        onClick={() => setShowStationPicker(true)}
-      >
-        {isLoading ? 'Loading stations...' :
-          sortedChannels.length > 0
-            ? `${sortedChannels.length} stations${isFiltering ? ' (filtered)' : ''}`
-            : enabledCount === 0
-              ? 'No genres selected'
-              : 'No stations available'}
-        <span className="material-symbols-outlined menu-icon">menu_open</span>
-      </div>
-
-      {/* Genre Filter & Sort - above carousel */}
-      {contentVisible && (
-        <div className="genre-filter-row">
-          <SortDropdown
-            value={sortOption}
-            onChange={setSortOption}
-          />
-          <GenreFilter
-            enabledGenres={enabledGenres}
-            onEnableGenre={enableGenre}
-            onDisableGenre={disableGenre}
-            onEnableAll={enableAll}
-          />
+      {/* Station Controls Group */}
+      <div className="station-controls-group">
+        {/* Station Count - left aligned */}
+        <div
+          className={`station-count ${contentVisible ? 'visible' : ''}`}
+          onClick={() => setShowStationPicker(true)}
+        >
+          {isLoading ? 'Loading stations...' :
+            sortedChannels.length > 0
+              ? `${sortedChannels.length} stations${isFiltering ? ' (filtered)' : ''}`
+              : enabledCount === 0
+                ? 'No genres selected'
+                : 'No stations available'}
+          <span className="material-symbols-outlined menu-icon">menu_open</span>
         </div>
-      )}
 
-      {/* Channel Carousel */}
-      <ChannelCarousel
-        channels={sortedChannels}
-        selectedIndex={selectedIndex}
-        onSelectChannel={playChannel}
-        visible={contentVisible}
-        isFavorite={isFavorite}
-        onToggleFavorite={toggleFavorite}
-      />
+        {/* Genre Filter & Sort - above carousel */}
+        {contentVisible && (
+          <div className="genre-filter-row">
+            <SortDropdown
+              value={sortOption}
+              onChange={setSortOption}
+            />
+            <GenreFilter
+              enabledGenres={enabledGenres}
+              onEnableGenre={enableGenre}
+              onDisableGenre={disableGenre}
+              onEnableAll={enableAll}
+            />
+          </div>
+        )}
+
+        {/* Channel Carousel */}
+        <ChannelCarousel
+          channels={sortedChannels}
+          selectedIndex={selectedIndex}
+          onSelectChannel={playChannel}
+          visible={contentVisible}
+          isFavorite={isFavorite}
+          onToggleFavorite={toggleFavorite}
+        />
+      </div>
 
 
       {/* Station Picker Dropdown */}
