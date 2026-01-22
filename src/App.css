@@ -586,7 +586,7 @@
 .controls {
   display: grid;
   grid-template-columns: 1fr auto;
-  align-items: center;
+  align-items: end;
   gap: 24px;
   padding: 16px 0;
   position: relative;
@@ -987,6 +987,8 @@
   align-items: center;
   justify-content: center;
   gap: 32px;
+  transform: scale(0.9);
+  transform-origin: center center;
 }
 
 .control-btn {
@@ -1081,19 +1083,23 @@
 }
 
 
-/* Play Section - fixed right with listeners + transport controls */
+/* Play Section - fixed right with transport controls and listeners below */
 .play-section {
   display: flex;
+  flex-direction: column;
   align-items: center;
   justify-content: flex-end;
-  gap: 24px;
+  gap: 40px;
   padding-right: 24px;
+  transform: translateY(48px);
 }
 
 .listeners-count {
-  color: rgba(255, 255, 255, 0.6);
-  font-size: 14px;
+  color: rgba(255, 255, 255, 0.5);
+  font-size: 12px;
   white-space: nowrap;
+  text-align: center;
+  line-height: 1;
 }
 
 /* Header */

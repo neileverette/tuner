@@ -60,13 +60,8 @@ function PlayerControls({
         <span className={`artist ${isTransitioning ? 'transitioning' : ''}`}>{displayedChannel?.genre || ''}</span>
       </div>
 
-      {/* Fixed right: listeners + transport controls */}
+      {/* Fixed right: transport controls with listeners below */}
       <div className="play-section">
-        <span className="listeners-count">
-          {currentChannel?.listeners != null && currentChannel.listeners > 0
-            ? `${currentChannel.listeners.toLocaleString()} listeners`
-            : ''}
-        </span>
         <div className="transport-controls">
           <button className="control-btn chevron-btn" onClick={onPrev}>
             <span className="material-symbols-outlined">chevron_left</span>
@@ -86,6 +81,11 @@ function PlayerControls({
             <span className="material-symbols-outlined">chevron_right</span>
           </button>
         </div>
+        <span className="listeners-count">
+          {currentChannel?.listeners != null && currentChannel.listeners > 0
+            ? `${currentChannel.listeners.toLocaleString()} listeners`
+            : ''}
+        </span>
       </div>
     </div>
   )
