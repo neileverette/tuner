@@ -66,6 +66,7 @@ function App() {
   const [isTransitioning, setIsTransitioning] = useState(false)
   const [transitionDirection, setTransitionDirection] = useState<'left' | 'right'>('right')
   const [showStationPicker, setShowStationPicker] = useState(false)
+  const [emailCopied, setEmailCopied] = useState(false)
   const [streamError, setStreamError] = useState<string | null>(null)
   const [showWelcome, setShowWelcome] = useState(() => {
     return localStorage.getItem('tuner-welcome-dismissed') !== 'true'
@@ -421,7 +422,16 @@ function App() {
         <a href="https://www.nts.live/gift-supporters" target="_blank" rel="noopener noreferrer">NTS Radio</a>
         <a href="https://www.kexp.org/donate/" target="_blank" rel="noopener noreferrer">KEXP</a>
         <a href="https://buy.stripe.com/7sY28kbWc4EC75waWzgnK00" target="_blank" rel="noopener noreferrer">Like what you hear with tunr? Make a donation</a>
-        <a href="mailto:neil.everette@gmail.com">Contact tunr</a>
+        <button
+          className="copy-email-btn"
+          onClick={() => {
+            navigator.clipboard.writeText('neil.everette@gmail.com')
+            setEmailCopied(true)
+            setTimeout(() => setEmailCopied(false), 2000)
+          }}
+        >
+          {emailCopied ? 'Copied!' : 'Contact tunr'}
+        </button>
       </div>
 
       {/* Bottom Controls */}

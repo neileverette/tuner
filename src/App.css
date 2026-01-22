@@ -1115,7 +1115,6 @@
 .header-logo {
   height: 32px;
   width: auto;
-  filter: drop-shadow(0 4px 16px rgba(0, 0, 0, 0.6)) drop-shadow(0 2px 6px rgba(0, 0, 0, 0.4));
 }
 
 /* Splash Screen */
@@ -1656,6 +1655,23 @@
 }
 
 .welcome-sources a:hover {
+  color: rgba(255, 255, 255, 0.85);
+  background: rgba(255, 255, 255, 0.15);
+}
+
+.welcome-sources .copy-email-btn {
+  display: inline-block;
+  padding: 4px 10px;
+  font-size: 12px;
+  color: rgba(255, 255, 255, 0.5);
+  background: rgba(255, 255, 255, 0.08);
+  border: none;
+  border-radius: 12px;
+  cursor: pointer;
+  transition: color 0.15s ease, background 0.15s ease;
+}
+
+.welcome-sources .copy-email-btn:hover {
   color: rgba(255, 255, 255, 0.85);
   background: rgba(255, 255, 255, 0.15);
 }
