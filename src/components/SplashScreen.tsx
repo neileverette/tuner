@@ -11,7 +11,7 @@ function SplashScreen({ phase, backgroundImage }: SplashScreenProps) {
         style={{ backgroundImage: backgroundImage ? `url(${backgroundImage})` : undefined }}
       />
       <div className="splash-overlay" />
-      <img src="/tuner-logo.svg" alt="Tuner" className="splash-logo" />
+      <img src="/tuner-logo.svg" alt="tunr" className="splash-logo" />
     </div>
   )
 }

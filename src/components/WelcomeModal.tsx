@@ -17,15 +17,15 @@ function WelcomeModal({ visible, onDismiss, onDismissPermanently }: WelcomeModal
       </button>
 
       <div className="welcome-header">
-        <img src="/tuner-logo.svg" alt="Tuner" className="welcome-logo-img" />
+        <img src="/tuner-logo.svg" alt="tunr" className="welcome-logo-img" />
       </div>
 
       <div className="welcome-content">
-        <h1>Welcome to Tuner</h1>
+        <h1>Welcome to tunr</h1>
 
         <p className="welcome-tagline">
           Free, open music player inspired by radio.<br />
-          Tuner is about music discovery.<br />
+          tunr is about music discovery.<br />
           Designed for the keyboard — because flow matters.
         </p>
 

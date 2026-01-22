@@ -60,33 +60,32 @@ function PlayerControls({
         <span className={`artist ${isTransitioning ? 'transitioning' : ''}`}>{displayedChannel?.genre || ''}</span>
       </div>
 
-      <div className="playback-controls">
-        <button className="control-btn chevron-btn chevron-left" onClick={onPrev}>
-          <span className="material-symbols-outlined">chevron_left</span>
-        </button>
-        <button className="control-btn chevron-btn chevron-right" onClick={onNext}>
-          <span className="material-symbols-outlined">chevron_right</span>
-        </button>
-      </div>
-
-      {/* Fixed right: listeners + play button */}
+      {/* Fixed right: listeners + transport controls */}
       <div className="play-section">
         <span className="listeners-count">
           {currentChannel?.listeners != null && currentChannel.listeners > 0
             ? `${currentChannel.listeners.toLocaleString()} listeners`
             : ''}
         </span>
-        <button className={`control-btn play-btn ${isPlaying ? 'playing' : ''}`} onClick={onPlayPause}>
-          {isPlaying ? (
-            <svg viewBox="0 0 24 24" fill="currentColor">
-              <path d="M6 19h4V5H6v14zm8-14v14h4V5h-4z" />
-            </svg>
-          ) : (
-            <svg viewBox="0 0 24 24" fill="currentColor">
-              <path d="M8 5v14l11-7z" />
-            </svg>
-          )}
-        </button>
+        <div className="transport-controls">
+          <button className="control-btn chevron-btn" onClick={onPrev}>
+            <span className="material-symbols-outlined">chevron_left</span>
+          </button>
+          <button className={`control-btn play-btn ${isPlaying ? 'playing' : ''}`} onClick={onPlayPause}>
+            {isPlaying ? (
+              <svg viewBox="0 0 24 24" fill="currentColor">
+                <path d="M6 19h4V5H6v14zm8-14v14h4V5h-4z" />
+              </svg>
+            ) : (
+              <svg viewBox="0 0 24 24" fill="currentColor">
+                <path d="M8 5v14l11-7z" />
+              </svg>
+            )}
+          </button>
+          <button className="control-btn chevron-btn" onClick={onNext}>
+            <span className="material-symbols-outlined">chevron_right</span>
+          </button>
+        </div>
       </div>
     </div>
   )

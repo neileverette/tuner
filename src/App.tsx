@@ -299,7 +299,7 @@ function App() {
 
       {/* Header with logo - hidden while welcome banner is showing */}
       <header className={`app-header ${headerVisible && !showWelcome ? 'visible' : ''}`}>
-        <img src="/tuner-logo.svg" alt="Tuner" className="header-logo" />
+        <img src="/tuner-logo.svg" alt="tunr" className="header-logo" />
       </header>
 
       {/* Splash Screen */}
@@ -420,6 +420,8 @@ function App() {
         <a href="https://radioparadise.com/donate" target="_blank" rel="noopener noreferrer">Radio Paradise</a>
         <a href="https://www.nts.live/gift-supporters" target="_blank" rel="noopener noreferrer">NTS Radio</a>
         <a href="https://www.kexp.org/donate/" target="_blank" rel="noopener noreferrer">KEXP</a>
+        <a href="https://buy.stripe.com/7sY28kbWc4EC75waWzgnK00" target="_blank" rel="noopener noreferrer">Like what you hear with tunr? Make a donation</a>
+        <a href="mailto:neil.everette@gmail.com">Contact tunr</a>
       </div>
 
       {/* Bottom Controls */}

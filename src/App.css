@@ -11,6 +11,7 @@
   background: #fff;
   color: #fff;
   padding: 24px;
+  padding-bottom: 60px;
   gap: 24px;
   position: relative;
   overflow: hidden;
@@ -584,7 +585,7 @@
 /* Bottom Controls */
 .controls {
   display: grid;
-  grid-template-columns: 1fr auto 1fr;
+  grid-template-columns: 1fr auto;
   align-items: center;
   gap: 24px;
   padding: 16px 0;
@@ -980,12 +981,12 @@
   transition: opacity 0.15s ease, transform 0.15s ease;
 }
 
-/* Playback Controls */
-.playback-controls {
+/* Transport Controls - prev/play/next grouped together */
+.transport-controls {
   display: flex;
   align-items: center;
   justify-content: center;
-  position: relative;
+  gap: 32px;
 }
 
 .control-btn {
@@ -1053,50 +1054,34 @@
 
 /* Chevron buttons for prev/next station */
 .control-btn.chevron-btn {
-  position: absolute;
-  width: 32px;
-  height: 32px;
-  background: transparent;
-  color: rgba(255, 255, 255, 0.7);
+  width: 40px;
+  height: 40px;
+  background: rgba(255, 255, 255, 0.08);
+  color: rgba(255, 255, 255, 0.4);
   padding: 0;
-  z-index: 2;
   opacity: 0;
-  transform: scale(0.98);
-  transition: opacity 0.2s ease, transform 0.2s ease, right 0.2s ease, left 0.2s ease;
+  transform: scale(0.7);
+  transition: opacity 0.25s ease, transform 0.25s ease, color 0.2s ease, background 0.2s ease;
 }
 
-.playback-controls:hover .control-btn.chevron-btn {
+.play-section:hover .control-btn.chevron-btn {
   opacity: 1;
-}
-
-.playback-controls:hover .control-btn.chevron-left {
-  right: calc(50% + 26px);
-}
-
-.playback-controls:hover .control-btn.chevron-right {
-  left: calc(50% + 26px);
+  transform: scale(1.05);
+  background: rgba(255, 255, 255, 0.15);
+  color: rgba(255, 255, 255, 0.7);
 }
 
 .control-btn.chevron-btn:hover {
   color: rgba(255, 255, 255, 1);
-  background: transparent;
-  transform: scale(1);
+  background: rgba(255, 255, 255, 0.25);
 }
 
 .control-btn.chevron-btn .material-symbols-outlined {
-  font-size: 28px;
-}
-
-.control-btn.chevron-left {
-  right: calc(50% + 16px);
-}
-
-.control-btn.chevron-right {
-  left: calc(50% + 16px);
+  font-size: 32px;
 }
 
 
-/* Play Section - fixed right with listeners + play button */
+/* Play Section - fixed right with listeners + transport controls */
 .play-section {
   display: flex;
   align-items: center;
@@ -1105,15 +1090,10 @@
   padding-right: 24px;
 }
 
-.play-section .play-btn {
-  margin-right: 0;
-}
-
 .listeners-count {
   color: rgba(255, 255, 255, 0.6);
   font-size: 14px;
   white-space: nowrap;
-  padding-right: 24px;
 }
 
 /* Header */
@@ -1641,10 +1621,12 @@
 
 .welcome-sources {
   position: fixed;
-  bottom: 24px;
+  bottom: 48px;
   left: 50%;
   transform: translateX(-50%);
   display: flex;
+  flex-wrap: nowrap;
+  white-space: nowrap;
   gap: 8px;
   align-items: center;
   z-index: 10;
@@ -1665,7 +1647,7 @@
 .welcome-sources a {
   display: inline-block;
   padding: 4px 10px;
-  font-size: 10px;
+  font-size: 12px;
   color: rgba(255, 255, 255, 0.5);
   background: rgba(255, 255, 255, 0.08);
   border-radius: 12px;
@@ -1677,3 +1659,4 @@
   color: rgba(255, 255, 255, 0.85);
   background: rgba(255, 255, 255, 0.15);
 }
+
