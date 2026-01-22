@@ -84,7 +84,7 @@ function PlayerControls({
         <span className="listeners-count">
           {currentChannel?.listeners != null && currentChannel.listeners > 0
             ? `${currentChannel.listeners.toLocaleString()} listeners`
-            : ''}
+            : 'Lots of listeners'}
         </span>
       </div>
     </div>
