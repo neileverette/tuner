@@ -229,9 +229,9 @@
 .station-count {
   display: inline-flex;
   align-items: center;
-  gap: 6px;
-  padding-left: 24px;
-  margin-bottom: 0;
+  gap: 10px;
+  padding-left: 27px;
+  margin-bottom: 4px;
   font-size: 18px;
   color: rgba(255, 255, 255, 0.6);
   position: relative;
@@ -267,7 +267,8 @@
   z-index: 1;
   opacity: 0;
   transition: opacity 0.6s ease;
-  margin-top: 8px;
+  margin-top: 12px;
+  margin-left: -3px;
 }
 
 .sort-dropdown-container.visible {
@@ -333,12 +334,12 @@
 /* Album Carousel */
 .carousel {
   display: flex;
-  gap: 12px;
+  gap: 0;
   justify-content: flex-start;
-  align-items: flex-end;
-  padding: 0 24px 8px;
+  align-items: center;
+  padding: 0 24px;
   margin-bottom: 0;
-  margin-top: -8px;
+  margin-top: 0;
   overflow-x: auto;
   overflow-y: visible;
   position: relative;
@@ -351,7 +352,7 @@
   transition: opacity 0.6s ease;
   -webkit-mask-image: linear-gradient(to right, transparent, black 80px, black calc(100% - 80px), transparent);
   mask-image: linear-gradient(to right, transparent, black 80px, black calc(100% - 80px), transparent);
-  height: 120px;
+  height: 150px;
 }
 
 .carousel.visible {
@@ -363,37 +364,34 @@
 }
 
 .carousel-item {
-  width: 64px;
+  width: 100px;
   border: none;
   border-radius: 4px;
   overflow: visible;
   cursor: pointer;
   flex-shrink: 0;
-  transition: all 0.2s ease;
+  transition: transform 0.25s cubic-bezier(0.4, 0, 0.2, 1);
   display: flex;
   flex-direction: column;
   align-items: center;
   background: transparent;
+  transform: scale(0.8);
+  transform-origin: center center;
 }
 
 .carousel-item:hover {
-  transform: scale(1.05);
+  transform: scale(0.85);
 }
 
 .carousel-item.selected {
-  width: 80px;
+  transform: scale(1);
 }
 
 .carousel-item-image-wrapper {
   position: relative;
-  width: 64px;
-  height: 64px;
+  width: 100px;
+  height: 100px;
   overflow: visible;
-}
-
-.carousel-item.selected .carousel-item-image-wrapper {
-  width: 80px;
-  height: 80px;
 }
 
 .carousel-item.selected .carousel-item-image-wrapper::before {
@@ -570,20 +568,19 @@
 }
 
 .carousel-item-title {
-  font-size: 10px;
+  font-size: 11px;
   color: rgba(255, 255, 255, 0.7);
   text-align: center;
-  width: 64px;
-  margin-top: 8px;
+  width: 100px;
+  margin-top: 10px;
   white-space: nowrap;
   overflow: hidden;
   text-overflow: ellipsis;
-  transition: color 0.3s ease;
+  transition: color 0.25s cubic-bezier(0.4, 0, 0.2, 1);
 }
 
 .carousel-item.selected .carousel-item-title {
   color: #fff;
-  width: 80px;
 }
 
 .carousel-number {
