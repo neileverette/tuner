@@ -1189,7 +1189,7 @@
   height: 80px;
   width: auto;
   opacity: 1;
-  transform: scale(1);
+  transform: scale(1) translateY(-5px);
   transition: opacity 0.6s ease, transform 0.6s ease;
 }
 
