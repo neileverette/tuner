@@ -221,7 +221,7 @@
 .station-controls-group {
   display: flex;
   flex-direction: column;
-  gap: 8px;
+  gap: 16px;
   margin-bottom: 0;
 }
 
@@ -336,8 +336,9 @@
   gap: 12px;
   justify-content: flex-start;
   align-items: flex-end;
-  padding: 8px 24px 8px;
+  padding: 0 24px 8px;
   margin-bottom: 0;
+  margin-top: -8px;
   overflow-x: auto;
   overflow-y: visible;
   position: relative;
