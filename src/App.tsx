@@ -1,16 +1,18 @@
-import { useState, useEffect, useCallback, useRef, useMemo } from 'react'
+import { useState, useEffect, useCallback, useRef, useMemo, lazy, Suspense } from 'react'
 import './App.css'
 import ChannelCarousel from './components/ChannelCarousel'
 import PlayerControls from './components/PlayerControls'
-import StationPicker from './components/StationPicker'
 import SortDropdown from './components/SortDropdown'
 import HeroArtwork from './components/HeroArtwork'
 import SplashScreen from './components/SplashScreen'
-import WelcomeModal from './components/WelcomeModal'
 import { useChannels, useNowPlaying, useFavorites, useGenreFilter } from './hooks'
 import type { SortOption } from './types'
 import { sortChannels, filterChannelsByGenre } from './utils'
 import GenreFilter from './components/GenreFilter'
+
+// Lazy load modal components - these aren't needed on initial render
+const StationPicker = lazy(() => import('./components/StationPicker'))
+const WelcomeModal = lazy(() => import('./components/WelcomeModal'))
 
 function App() {
   const { channels, isLoading, error, refetch, getStreamUrl } = useChannels()
@@ -332,18 +334,20 @@ function App() {
         prevNtsBgColor={prevNtsBgColor}
       />
 
-      {/* Welcome Modal */}
+      {/* Welcome Modal - lazy loaded */}
       {showWelcome && contentVisible && (
-        <WelcomeModal
-          visible={true}
-          onDismiss={() => {
-            setShowWelcome(false)
-          }}
-          onDismissPermanently={() => {
-            setShowWelcome(false)
-            localStorage.setItem('tuner-welcome-dismissed', 'true')
-          }}
-        />
+        <Suspense fallback={null}>
+          <WelcomeModal
+            visible={true}
+            onDismiss={() => {
+              setShowWelcome(false)
+            }}
+            onDismissPermanently={() => {
+              setShowWelcome(false)
+              localStorage.setItem('tuner-welcome-dismissed', 'true')
+            }}
+          />
+        </Suspense>
       )}
 
       {/* Error Banner - Channel fetch error */}
@@ -410,19 +414,21 @@ function App() {
       </div>
 
 
-      {/* Station Picker Dropdown */}
+      {/* Station Picker Dropdown - lazy loaded */}
       {showStationPicker && (
-        <StationPicker
-          channels={sortedChannels}
-          selectedIndex={selectedIndex}
-          onSelectChannel={(index) => {
-            playChannel(index)
-            setShowStationPicker(false)
-          }}
-          onClose={() => setShowStationPicker(false)}
-          isFavorite={isFavorite}
-          onToggleFavorite={toggleFavorite}
-        />
+        <Suspense fallback={null}>
+          <StationPicker
+            channels={sortedChannels}
+            selectedIndex={selectedIndex}
+            onSelectChannel={(index) => {
+              playChannel(index)
+              setShowStationPicker(false)
+            }}
+            onClose={() => setShowStationPicker(false)}
+            isFavorite={isFavorite}
+            onToggleFavorite={toggleFavorite}
+          />
+        </Suspense>
       )}
 
       {/* Source Attribution */}
