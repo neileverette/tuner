@@ -104,6 +104,14 @@ function App() {
     }
   }, [showSplash])
 
+  // Update favicon based on play/pause state
+  useEffect(() => {
+    const favicon = document.querySelector('link[rel="icon"]') as HTMLLinkElement
+    if (favicon) {
+      favicon.href = isPlaying ? '/favicon-pause.svg' : '/favicon-play.svg'
+    }
+  }, [isPlaying])
+
   // Restore initial state from channels when loaded
   // Handles migration from old index-based storage to channel ID
   useEffect(() => {
