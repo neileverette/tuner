@@ -401,7 +401,7 @@ app.get('*', (req, res) => {
   res.sendFile(join(__dirname, '..', 'dist', 'index.html'));
 });
 
-const PORT = process.env.PORT || 3001;
+const PORT = process.env.PORT || 3000;
 app.listen(PORT, '0.0.0.0', () => {
   console.log(`Tuner server running on http://0.0.0.0:${PORT}`);
 });
