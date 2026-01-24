@@ -15,6 +15,7 @@ const POLL_INTERVALS: Record<SourceType, number> = {
   somafm: 10000,        // 10 seconds
   radioparadise: 30000, // 30 seconds - API rate limit
   nts: 60000,           // 60 seconds
+  radiobrowser: 30000,  // 30 seconds
 };
 
 function getSourceFromChannelId(channelId: string): SourceType | null {
