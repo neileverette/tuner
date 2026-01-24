@@ -61,6 +61,8 @@ jobs:
           username: ${{ secrets.DO_USER }}
           key: ${{ secrets.DO_SSH_KEY }}
           script: |
+            set -e  # Exit on any error
+            
             # Login to ECR
             aws ecr get-login-password --region ${{ env.AWS_REGION }} | \
               docker login --username AWS --password-stdin ${{ env.ECR_REGISTRY }}
@@ -68,20 +70,30 @@ jobs:
             # Pull latest image
             docker pull ${{ env.ECR_REGISTRY }}/${{ env.ECR_REPOSITORY }}:${{ env.DOCKER_TAG }}
             
-            # Stop and remove old container
-            docker stop ${{ env.CONTAINER_NAME }} || true
-            docker rm ${{ env.CONTAINER_NAME }} || true
+            # Stop and remove old container (including old staging container)
+            docker stop ${{ env.CONTAINER_NAME }} 2>/dev/null || true
+            docker rm ${{ env.CONTAINER_NAME }} 2>/dev/null || true
+            docker stop tuner-staging 2>/dev/null || true
+            docker rm tuner-staging 2>/dev/null || true
             
             # Run new container
-            docker run -d \
+            CONTAINER_ID=$(docker run -d \
               --name ${{ env.CONTAINER_NAME }} \
               --restart unless-stopped \
               -p ${{ env.CONTAINER_PORT }}:3000 \
-              ${{ env.ECR_REGISTRY }}/${{ env.ECR_REPOSITORY }}:${{ env.DOCKER_TAG }}
+              ${{ env.ECR_REGISTRY }}/${{ env.ECR_REPOSITORY }}:${{ env.DOCKER_TAG }})
+            
+            # Verify container started successfully
+            sleep 2
+            if ! docker ps | grep -q ${{ env.CONTAINER_NAME }}; then
+              echo "ERROR: Container failed to start"
+              docker logs ${{ env.CONTAINER_NAME }}
+              exit 1
+            fi
             
             # Clean up old images (keep last 2 versions)
             docker image prune -af --filter "until=48h"
             
-            echo "Deployed ${{ env.ENVIRONMENT }} to ${{ env.DEPLOY_URL }}"
+            echo "✅ Successfully deployed ${{ env.ENVIRONMENT }} to ${{ env.DEPLOY_URL }}"
 
 # Made with Bob
