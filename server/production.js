@@ -4,13 +4,204 @@ import http from 'http';
 import https from 'https';
 import { fileURLToPath } from 'url';
 import { dirname, join } from 'path';
+import { Resend } from 'resend';
+import { Transform } from 'stream';
+
+// =============================================================================
+// SCALABLE STREAMING CONFIGURATION
+// =============================================================================
+// Connection pooling - reuse sockets instead of creating new ones per request
+const httpAgent = new http.Agent({
+  keepAlive: true,
+  keepAliveMsecs: 30000,
+  maxSockets: 100,        // Max concurrent connections per host
+  maxFreeSockets: 20,     // Keep idle sockets ready
+  timeout: 30000
+});
+
+const httpsAgent = new https.Agent({
+  keepAlive: true,
+  keepAliveMsecs: 30000,
+  maxSockets: 100,
+  maxFreeSockets: 20,
+  timeout: 30000
+});
+
+// Stream timeouts
+const UPSTREAM_TIMEOUT = 15000;   // 15s to connect to radio source
+const STREAM_READ_TIMEOUT = 30000; // 30s max silence before dropping
+
+// Buffer configuration for smooth playback
+const BUFFER_HIGH_WATER_MARK = 256 * 1024; // 256KB buffer (2-3 seconds of audio)
 
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = dirname(__filename);
 
+// Email alerting setup
+const resend = process.env.RESEND_API_KEY ? new Resend(process.env.RESEND_API_KEY) : null;
+const ALERT_EMAIL = process.env.ALERT_EMAIL || 'alert@example.com';
+
+// Rate limiting: track last alert time per station (max 1 email per station per hour)
+const alertCooldowns = new Map();
+const ALERT_COOLDOWN_MS = 60 * 60 * 1000; // 1 hour
+
+async function sendStreamAlert(stationName, stationId, errorType, details) {
+  if (!resend) {
+    console.warn('RESEND_API_KEY not configured - skipping email alert');
+    return;
+  }
+
+  const lastAlert = alertCooldowns.get(stationId);
+  const now = Date.now();
+  if (lastAlert && (now - lastAlert) < ALERT_COOLDOWN_MS) {
+    console.log(`Alert for ${stationId} suppressed (cooldown)`);
+    return;
+  }
+
+  try {
+    await resend.emails.send({
+      from: 'Tuner Alerts <onboarding@resend.dev>',
+      to: ALERT_EMAIL,
+      subject: `🔴 Stream Failed: ${stationName}`,
+      html: `
+        <h2>Stream Failure Alert</h2>
+        <p><strong>Station:</strong> ${stationName}</p>
+        <p><strong>Station ID:</strong> ${stationId}</p>
+        <p><strong>Error Type:</strong> ${errorType}</p>
+        <p><strong>Details:</strong> ${details}</p>
+        <p><strong>Time:</strong> ${new Date().toISOString()}</p>
+        <hr>
+        <p style="color: #666; font-size: 12px;">Rate-limited to 1 per station per hour.</p>
+      `
+    });
+    alertCooldowns.set(stationId, now);
+    console.log(`Alert sent for ${stationName} (${stationId})`);
+  } catch (err) {
+    console.error('Failed to send alert email:', err);
+  }
+}
+
 const app = express();
 app.use(cors());
 app.use(express.json());
+
+// =============================================================================
+// CLOUDFLARE-OPTIMIZED STREAM PROXY
+// =============================================================================
+// This helper handles all the buffering, timeouts, and error recovery
+function proxyStream(streamUrl, contentType, res, stationName = 'unknown') {
+  const isHttps = streamUrl.startsWith('https');
+  const agent = isHttps ? httpsAgent : httpAgent;
+  const protocol = isHttps ? https : http;
+
+  const options = {
+    agent,
+    headers: {
+      'User-Agent': 'Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36',
+      'Accept': '*/*',
+      'Connection': 'keep-alive'
+    },
+    timeout: UPSTREAM_TIMEOUT
+  };
+
+  const upstream = protocol.get(streamUrl, options, (streamRes) => {
+    // Handle redirects
+    if (streamRes.statusCode >= 300 && streamRes.statusCode < 400 && streamRes.headers.location) {
+      console.log(`[${stationName}] Following redirect to:`, streamRes.headers.location);
+      return proxyStream(streamRes.headers.location, contentType, res, stationName);
+    }
+
+    if (streamRes.statusCode !== 200) {
+      console.error(`[${stationName}] Upstream returned ${streamRes.statusCode}`);
+      if (!res.headersSent) {
+        res.status(502).json({ error: 'Upstream error', status: streamRes.statusCode });
+      }
+      return;
+    }
+
+    // Set response headers optimized for Cloudflare edge caching
+    res.setHeader('Content-Type', contentType);
+    res.setHeader('Cache-Control', 'no-cache, no-store, must-revalidate');
+    res.setHeader('X-Accel-Buffering', 'no');  // Disable nginx buffering if present
+    res.setHeader('Transfer-Encoding', 'chunked');
+
+    // Cloudflare headers for streaming
+    res.setHeader('CF-Cache-Status', 'DYNAMIC');
+
+    // Set read timeout on upstream
+    streamRes.setTimeout(STREAM_READ_TIMEOUT, () => {
+      console.error(`[${stationName}] Upstream read timeout - no data for ${STREAM_READ_TIMEOUT}ms`);
+      upstream.destroy();
+    });
+
+    // Create a buffering transform stream for smooth delivery
+    const buffer = new Transform({
+      highWaterMark: BUFFER_HIGH_WATER_MARK,
+      transform(chunk, encoding, callback) {
+        callback(null, chunk);
+      }
+    });
+
+    // Pipe with error handling: upstream -> buffer -> client
+    streamRes
+      .pipe(buffer)
+      .pipe(res);
+
+    // Handle upstream errors mid-stream
+    streamRes.on('error', (err) => {
+      console.error(`[${stationName}] Upstream stream error:`, err.message);
+      buffer.destroy();
+      if (!res.writableEnded) res.end();
+    });
+
+    // Handle client disconnect - clean up upstream
+    res.on('close', () => {
+      console.log(`[${stationName}] Client disconnected`);
+      streamRes.destroy();
+      buffer.destroy();
+    });
+
+  });
+
+  // Handle connection timeout
+  upstream.setTimeout(UPSTREAM_TIMEOUT, () => {
+    console.error(`[${stationName}] Connection timeout after ${UPSTREAM_TIMEOUT}ms`);
+    upstream.destroy();
+    if (!res.headersSent) {
+      res.status(504).json({ error: 'Connection timeout' });
+    }
+  });
+
+  // Handle connection errors
+  upstream.on('error', (err) => {
+    console.error(`[${stationName}] Connection error:`, err.message);
+    if (!res.headersSent) {
+      res.status(502).json({ error: 'Connection failed', details: err.message });
+    }
+  });
+
+  return upstream;
+}
+
+// Endpoint for frontend to report stream failures
+app.post('/api/stream-failure', async (req, res) => {
+  const { stationName, stationId, errorType, details } = req.body;
+
+  if (!stationId) {
+    return res.status(400).json({ error: 'stationId required' });
+  }
+
+  console.log(`Stream failure reported: ${stationName} (${stationId}) - ${errorType}: ${details}`);
+
+  await sendStreamAlert(
+    stationName || stationId,
+    stationId,
+    errorType || 'Unknown',
+    details || 'No details provided'
+  );
+
+  res.json({ success: true });
+});
 
 // Serve static files from the built frontend
 app.use(express.static(join(__dirname, '..', 'dist')));
@@ -45,21 +236,7 @@ app.get('/api/stream/rp/:channel/:quality', (req, res) => {
   const streamUrl = `http://stream.radioparadise.com/${RP_CHANNELS[channel].prefix}${qualitySuffix}`;
 
   console.log('Proxying Radio Paradise stream:', streamUrl);
-
-  const options = {
-    headers: {
-      'User-Agent': 'Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36'
-    }
-  };
-
-  http.get(streamUrl, options, (streamRes) => {
-    res.setHeader('Content-Type', RP_QUALITIES[quality].contentType);
-    res.setHeader('Cache-Control', 'no-cache');
-    streamRes.pipe(res);
-  }).on('error', (err) => {
-    console.error('Radio Paradise stream error:', err);
-    res.status(500).json({ error: 'Stream error' });
-  });
+  proxyStream(streamUrl, RP_QUALITIES[quality].contentType, res, `RP-${channel}`);
 });
 
 // Proxy Radio Paradise now-playing API
@@ -110,21 +287,7 @@ app.get('/api/stream/kexp/:quality', (req, res) => {
 
   const streamUrl = KEXP_QUALITIES[quality].url;
   console.log('Proxying KEXP stream:', streamUrl);
-
-  const options = {
-    headers: {
-      'User-Agent': 'Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36'
-    }
-  };
-
-  https.get(streamUrl, options, (streamRes) => {
-    res.setHeader('Content-Type', KEXP_QUALITIES[quality].contentType);
-    res.setHeader('Cache-Control', 'no-cache');
-    streamRes.pipe(res);
-  }).on('error', (err) => {
-    console.error('KEXP stream error:', err);
-    res.status(500).json({ error: 'Stream error' });
-  });
+  proxyStream(streamUrl, KEXP_QUALITIES[quality].contentType, res, 'KEXP');
 });
 
 // Proxy KEXP now-playing API
@@ -178,21 +341,7 @@ app.get('/api/nts/live/:channel', (req, res) => {
   const streamUrl = `https://stream-relay-geo.ntslive.net/${streamPath}`;
 
   console.log('Proxying NTS live stream:', streamUrl);
-
-  const options = {
-    headers: {
-      'User-Agent': 'Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36'
-    }
-  };
-
-  https.get(streamUrl, options, (streamRes) => {
-    res.setHeader('Content-Type', 'audio/mpeg');
-    res.setHeader('Cache-Control', 'no-cache');
-    streamRes.pipe(res);
-  }).on('error', (err) => {
-    console.error('NTS live stream error:', err);
-    res.status(500).json({ error: 'Stream error' });
-  });
+  proxyStream(streamUrl, 'audio/mpeg', res, `NTS-${channel}`);
 });
 
 // Proxy NTS Infinite Mixtape streams
@@ -209,21 +358,7 @@ app.get('/api/nts/mixtape/:mixtapeId', (req, res) => {
   const streamUrl = `https://stream-mixtape-geo.ntslive.net/${mixtapeId}`;
 
   console.log('Proxying NTS mixtape stream:', streamUrl);
-
-  const options = {
-    headers: {
-      'User-Agent': 'Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36'
-    }
-  };
-
-  https.get(streamUrl, options, (streamRes) => {
-    res.setHeader('Content-Type', 'audio/mpeg');
-    res.setHeader('Cache-Control', 'no-cache');
-    streamRes.pipe(res);
-  }).on('error', (err) => {
-    console.error('NTS mixtape stream error:', err);
-    res.status(500).json({ error: 'Stream error' });
-  });
+  proxyStream(streamUrl, 'audio/mpeg', res, `NTS-${mixtapeId}`);
 });
 
 // Proxy NTS now-playing API (returns info for both live channels)
@@ -257,22 +392,8 @@ app.get('/api/stream/:channelId', (req, res) => {
   const { channelId } = req.params;
   const streamUrl = `https://ice1.somafm.com/${channelId}-128-mp3`;
 
-  console.log('Proxying stream:', streamUrl);
-
-  const options = {
-    headers: {
-      'User-Agent': 'Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36'
-    }
-  };
-
-  https.get(streamUrl, options, (streamRes) => {
-    res.setHeader('Content-Type', 'audio/mpeg');
-    res.setHeader('Cache-Control', 'no-cache');
-    streamRes.pipe(res);
-  }).on('error', (err) => {
-    console.error('Stream error:', err);
-    res.status(500).send('Stream error');
-  });
+  console.log('Proxying SomaFM stream:', streamUrl);
+  proxyStream(streamUrl, 'audio/mpeg', res, `SomaFM-${channelId}`);
 });
 
 // SPA fallback - serve index.html for all other routes

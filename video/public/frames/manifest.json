@@ -1,0 +1,7 @@
+{
+  "fps": 30,
+  "totalFrames": 240,
+  "durationSeconds": 8,
+  "mode": "static-hero",
+  "heroFrame": "hero.png"
+}

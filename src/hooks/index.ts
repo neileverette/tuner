@@ -10,3 +10,5 @@ export { useFavorites } from './useFavorites';
 
 export { useGenreFilter } from './useGenreFilter';
 export type { UseGenreFilterResult } from './useGenreFilter';
+
+export { useStreamHealth } from './useStreamHealth';

@@ -1,0 +1,26 @@
+{
+  "name": "tuner-promo-video",
+  "version": "1.0.0",
+  "description": "Apple-style promotional video for Tuner using Playwright browser capture",
+  "type": "module",
+  "scripts": {
+    "capture": "npx tsx src/capture.ts",
+    "studio": "remotion studio",
+    "build": "remotion render TunerPromo out/tuner-promo.mp4",
+    "build:gif": "remotion render TunerPromo out/tuner-promo.gif",
+    "all": "npm run capture && npm run build"
+  },
+  "dependencies": {
+    "@remotion/cli": "^4.0.0",
+    "playwright": "^1.40.0",
+    "react": "^18.3.1",
+    "react-dom": "^18.3.1",
+    "remotion": "^4.0.0"
+  },
+  "devDependencies": {
+    "@types/node": "^20.0.0",
+    "@types/react": "^18.3.0",
+    "tsx": "^4.7.0",
+    "typescript": "^5.0.0"
+  }
+}

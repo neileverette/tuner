@@ -2,9 +2,55 @@ import express from 'express';
 import cors from 'cors';
 import http from 'http';
 import https from 'https';
+import { Resend } from 'resend';
 
 // Import compiled TypeScript config (ESM modules)
 import { aggregateByGenre, aggregateBySource } from '../dist/config/aggregation.js';
+
+// Email alerting setup
+const resend = process.env.RESEND_API_KEY ? new Resend(process.env.RESEND_API_KEY) : null;
+const ALERT_EMAIL = process.env.ALERT_EMAIL || 'alert@example.com';
+
+// Rate limiting: track last alert time per station (max 1 email per station per hour)
+const alertCooldowns = new Map(); // stationId -> timestamp
+const ALERT_COOLDOWN_MS = 60 * 60 * 1000; // 1 hour
+
+async function sendStreamAlert(stationName, stationId, errorType, details) {
+  if (!resend) {
+    console.warn('RESEND_API_KEY not configured - skipping email alert');
+    return;
+  }
+
+  // Check rate limit
+  const lastAlert = alertCooldowns.get(stationId);
+  const now = Date.now();
+  if (lastAlert && (now - lastAlert) < ALERT_COOLDOWN_MS) {
+    console.log(`Alert for ${stationId} suppressed (cooldown: ${Math.round((ALERT_COOLDOWN_MS - (now - lastAlert)) / 60000)}min remaining)`);
+    return;
+  }
+
+  try {
+    await resend.emails.send({
+      from: 'Tuner Alerts <onboarding@resend.dev>',
+      to: ALERT_EMAIL,
+      subject: `🔴 Stream Failed: ${stationName}`,
+      html: `
+        <h2>Stream Failure Alert</h2>
+        <p><strong>Station:</strong> ${stationName}</p>
+        <p><strong>Station ID:</strong> ${stationId}</p>
+        <p><strong>Error Type:</strong> ${errorType}</p>
+        <p><strong>Details:</strong> ${details}</p>
+        <p><strong>Time:</strong> ${new Date().toISOString()}</p>
+        <hr>
+        <p style="color: #666; font-size: 12px;">This alert is rate-limited to 1 per station per hour.</p>
+      `
+    });
+    alertCooldowns.set(stationId, now);
+    console.log(`Alert sent for ${stationName} (${stationId})`);
+  } catch (err) {
+    console.error('Failed to send alert email:', err);
+  }
+}
 
 /**
  * Tuner Proxy Server
@@ -45,6 +91,26 @@ import { aggregateByGenre, aggregateBySource } from '../dist/config/aggregation.
 const app = express();
 app.use(cors());
 app.use(express.json());
+
+// Endpoint for frontend to report stream failures
+app.post('/api/stream-failure', async (req, res) => {
+  const { stationName, stationId, errorType, details } = req.body;
+
+  if (!stationId) {
+    return res.status(400).json({ error: 'stationId required' });
+  }
+
+  console.log(`Stream failure reported: ${stationName} (${stationId}) - ${errorType}: ${details}`);
+
+  await sendStreamAlert(
+    stationName || stationId,
+    stationId,
+    errorType || 'Unknown',
+    details || 'No details provided'
+  );
+
+  res.json({ success: true });
+});
 
 // Radio Paradise channel and quality mappings
 // Note: Main uses different URL patterns than other channels
