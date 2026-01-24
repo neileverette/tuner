@@ -347,6 +347,8 @@ function App() {
         isNts={selectedChannel?.source === 'nts'}
         ntsBgColor={ntsBgColor || selectedChannel?.bgColor}
         prevNtsBgColor={prevNtsBgColor}
+        stationId={selectedChannel?.id}
+        stationName={selectedChannel?.title}
       />
 
       {/* Welcome Modal - lazy loaded */}

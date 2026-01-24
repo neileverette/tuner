@@ -1,7 +1,7 @@
 /**
  * Source type identifier for multi-source support
  */
-export type SourceType = 'kexp' | 'somafm' | 'radioparadise' | 'nts';
+export type SourceType = 'kexp' | 'somafm' | 'radioparadise' | 'nts' | 'radiobrowser';
 
 /**
  * Stream quality option
