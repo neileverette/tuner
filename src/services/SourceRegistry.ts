@@ -1,5 +1,5 @@
 import type { SourceType, Channel, NowPlaying, SourceAdapter } from '../types';
-import { KEXPAdapter, SomaFMAdapter, RadioParadiseAdapter, NTSAdapter } from '../adapters';
+import { KEXPAdapter, SomaFMAdapter, RadioParadiseAdapter, NTSAdapter, RadioBrowserAdapter } from '../adapters';
 
 /**
  * SourceRegistry orchestrates multiple source adapters, providing unified
@@ -129,6 +129,7 @@ export class SourceRegistry {
       'somafm': 'somafm',
       'rp': 'radioparadise',
       'nts': 'nts',
+      'radiobrowser': 'radiobrowser',
     };
 
     const source = sourceMap[sourcePrefix];
@@ -154,6 +155,7 @@ export function createDefaultRegistry(): SourceRegistry {
   registry.register(new SomaFMAdapter());
   registry.register(new RadioParadiseAdapter());
   registry.register(new NTSAdapter());
+  registry.register(new RadioBrowserAdapter());
   return registry;
 }
 

@@ -1,3 +1,6 @@
+import { useState } from 'react'
+import { generateFallbackThumbnail } from '../utils/thumbnailFallback'
+
 interface HeroArtworkProps {
   currentImage: string
   prevImage: string
@@ -8,6 +11,8 @@ interface HeroArtworkProps {
   isNts?: boolean
   ntsBgColor?: string
   prevNtsBgColor?: string
+  stationId?: string
+  stationName?: string
 }
 
 function HeroArtwork({
@@ -19,8 +24,28 @@ function HeroArtwork({
   isKexp = false,
   isNts = false,
   ntsBgColor,
-  prevNtsBgColor
+  prevNtsBgColor,
+  stationId,
+  stationName
 }: HeroArtworkProps) {
+  const [imageError, setImageError] = useState(false)
+  const [failedImage, setFailedImage] = useState<string>('')
+  
+  // Reset error state when image changes
+  if (currentImage !== failedImage && imageError) {
+    setImageError(false)
+    setFailedImage('')
+  }
+  
+  // Generate fallback thumbnail data - only use fallback if current image failed to load
+  const fallback = stationId && stationName
+    ? generateFallbackThumbnail(stationId, stationName, imageError ? '' : currentImage)
+    : null
+
+  const handleImageError = () => {
+    setImageError(true)
+    setFailedImage(currentImage)
+  }
   if (isKexp) {
     return (
       <div className="hero-artwork">
@@ -66,13 +91,21 @@ function HeroArtwork({
           className={`hero-image hero-image-prev ${isTransitioning ? `transitioning ${transitionDirection}` : ''}`}
         />
       )}
-      {currentImage && (
+      {fallback?.needsFallback ? (
+        <div
+          className={`hero-fallback hero-image-current ${isTransitioning ? `transitioning ${transitionDirection}` : ''}`}
+          style={{ backgroundColor: fallback.backgroundColor }}
+        >
+          <span className="hero-fallback-initials">{fallback.initials}</span>
+        </div>
+      ) : currentImage ? (
         <img
           src={currentImage}
           alt={altText}
           className={`hero-image hero-image-current ${isTransitioning ? `transitioning ${transitionDirection}` : ''}`}
+          onError={handleImageError}
         />
-      )}
+      ) : null}
     </div>
   )
 }

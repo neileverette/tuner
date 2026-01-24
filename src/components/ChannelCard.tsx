@@ -1,4 +1,6 @@
+import { useState } from 'react'
 import type { Channel } from '../types'
+import { generateFallbackThumbnail } from '../utils/thumbnailFallback'
 
 interface ChannelCardProps {
   channel: Channel
@@ -72,15 +74,31 @@ function ChannelCard({ channel, index, isSelected, onSelect, overrideImage, isFa
   const source = getSourceFromId(channel.id)
   const isKexp = source === 'kexp'
   const isNts = source === 'nts'
+  const [imageError, setImageError] = useState(false)
+  const [failedImage, setFailedImage] = useState<string>('')
 
   // Use override image if provided, otherwise channel default, with RP fallback
   const imageUrl = overrideImage
     ?? channel.image.medium
     ?? (source === 'rp' ? RP_FALLBACK_IMAGE : '')
 
+  // Reset error state when image changes
+  if (imageUrl !== failedImage && imageError) {
+    setImageError(false)
+    setFailedImage('')
+  }
+
+  // Generate fallback thumbnail data - only use fallback if current image failed to load
+  const fallback = generateFallbackThumbnail(channel.id, channel.title, imageError ? '' : imageUrl)
+
   const handleFavoriteClick = (e: React.MouseEvent) => {
     e.stopPropagation()
     onToggleFavorite?.(channel.id)
+  }
+
+  const handleImageError = () => {
+    setImageError(true)
+    setFailedImage(imageUrl)
   }
 
   return (
@@ -101,8 +119,19 @@ function ChannelCard({ channel, index, isSelected, onSelect, overrideImage, isFa
             <img src={channel.image.medium} alt="" className="nts-logo-blur" />
             <img src={channel.image.medium} alt="NTS" className="nts-logo-img" />
           </div>
+        ) : fallback.needsFallback ? (
+          <div
+            className="fallback-thumbnail"
+            style={{ backgroundColor: fallback.backgroundColor }}
+          >
+            <span className="fallback-initials">{fallback.initials}</span>
+          </div>
         ) : (
-          <img src={imageUrl} alt={channel.title} />
+          <img
+            src={imageUrl}
+            alt={channel.title}
+            onError={handleImageError}
+          />
         )}
         {source && !isKexp && !isNts && <span className={`source-badge source-${source}`}>{getSourceBadgeLabel(source)}</span>}
         <button
