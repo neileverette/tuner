@@ -70,11 +70,15 @@ jobs:
             # Pull latest image
             docker pull ${{ env.ECR_REGISTRY }}/${{ env.ECR_REPOSITORY }}:${{ env.DOCKER_TAG }}
             
-            # Stop and remove old container (including old staging container)
-            docker stop ${{ env.CONTAINER_NAME }} 2>/dev/null || true
-            docker rm ${{ env.CONTAINER_NAME }} 2>/dev/null || true
-            docker stop tuner-staging 2>/dev/null || true
-            docker rm tuner-staging 2>/dev/null || true
+            # Stop and remove ALL containers using port 3001
+            docker ps -a | grep -E 'tuner-testing|tuner-staging' | awk '{print $1}' | xargs -r docker stop || true
+            docker ps -a | grep -E 'tuner-testing|tuner-staging' | awk '{print $1}' | xargs -r docker rm || true
+            
+            # Kill any process using port 3001
+            sudo lsof -ti:${{ env.CONTAINER_PORT }} | xargs -r sudo kill -9 || true
+            
+            # Wait for port to be released
+            sleep 2
             
             # Run new container
             CONTAINER_ID=$(docker run -d \
