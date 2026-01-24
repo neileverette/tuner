@@ -30,7 +30,7 @@ jobs:
             echo "ENVIRONMENT=testing" >> $GITHUB_ENV
             echo "DOCKER_TAG=testing-latest" >> $GITHUB_ENV
             echo "CONTAINER_NAME=tuner-testing" >> $GITHUB_ENV
-            echo "CONTAINER_PORT=3001" >> $GITHUB_ENV
+            echo "CONTAINER_PORT=3002" >> $GITHUB_ENV
             echo "DEPLOY_URL=testing.tunr-music.com" >> $GITHUB_ENV
           fi
 
