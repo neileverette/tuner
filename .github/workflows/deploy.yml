@@ -49,7 +49,7 @@ jobs:
         env:
           ECR_REGISTRY: ${{ steps.login-ecr.outputs.registry }}
         run: |
-          docker build -t $ECR_REGISTRY/$ECR_REPOSITORY:${{ env.DOCKER_TAG }} .
+          docker build --no-cache -t $ECR_REGISTRY/$ECR_REPOSITORY:${{ env.DOCKER_TAG }} .
           docker push $ECR_REGISTRY/$ECR_REPOSITORY:${{ env.DOCKER_TAG }}
 
       - name: Deploy to DigitalOcean
