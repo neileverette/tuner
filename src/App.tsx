@@ -5,7 +5,7 @@ import PlayerControls from './components/PlayerControls'
 import SortDropdown from './components/SortDropdown'
 import HeroArtwork from './components/HeroArtwork'
 import SplashScreen from './components/SplashScreen'
-import { useChannels, useNowPlaying, useFavorites, useGenreFilter } from './hooks'
+import { useChannels, useNowPlaying, useFavorites, useGenreFilter, useStreamHealth } from './hooks'
 import type { SortOption } from './types'
 import { sortChannels, filterChannelsByGenre } from './utils'
 import GenreFilter from './components/GenreFilter'
@@ -17,6 +17,7 @@ const WelcomeModal = lazy(() => import('./components/WelcomeModal'))
 function App() {
   const { channels, isLoading, error, refetch, getStreamUrl } = useChannels()
   const { isFavorite, toggleFavorite } = useFavorites()
+  const { startTimeout: startStreamTimeout, cancelTimeout: clearStreamTimeout, reportError: reportStreamError } = useStreamHealth()
   const {
     enabledGenres,
     enableGenre,
@@ -205,24 +206,34 @@ function App() {
         console.log('Playing:', proxyUrl)
         audioRef.current.src = proxyUrl
         audioRef.current.volume = 1.0
+
+        // Start health check timeout
+        startStreamTimeout(channel.id, channel.title)
+
         const playPromise = audioRef.current.play()
         if (playPromise !== undefined) {
           playPromise
             .then(() => {
               console.log('Playback started')
+              clearStreamTimeout() // Stream started successfully
               setIsPlaying(true)
             })
             .catch(err => {
               // AbortError is expected when switching channels quickly - ignore it
-              if (err.name === 'AbortError') return
+              if (err.name === 'AbortError') {
+                clearStreamTimeout()
+                return
+              }
               console.error('Playback error:', err)
+              clearStreamTimeout()
+              reportStreamError('PlaybackError', err.message || 'Unknown playback error')
               setIsPlaying(false)
               setStreamError('Failed to start playback')
             })
         }
       }
     }, 300)
-  }, [sortedChannels, selectedIndex, getStreamUrl])
+  }, [sortedChannels, selectedIndex, getStreamUrl, startStreamTimeout, clearStreamTimeout, reportStreamError])
 
   // Control functions
   const handlePlayPause = useCallback(() => {
@@ -298,14 +309,18 @@ function App() {
 
   return (
     <div className="tuner">
-      {/* Audio element */}
+      {/* Audio element - preload="auto" enables browser buffering for seamless playback */}
       <audio
         ref={audioRef}
-        preload="none"
+        preload="auto"
         onError={() => {
+          clearStreamTimeout()
+          reportStreamError('ConnectionError', 'Stream connection failed')
           setStreamError('Stream connection failed')
           setIsPlaying(false)
         }}
+        onWaiting={() => console.warn('Audio buffering - waiting for data')}
+        onStalled={() => console.warn('Audio stalled - network slowdown')}
       />
 
       {/* Header with logo - hidden while welcome banner is showing */}

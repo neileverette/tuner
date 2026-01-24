@@ -5,6 +5,7 @@
 import { SOMAFM_CONFIG } from './somafm.js';
 import { RADIO_PARADISE_CONFIG } from './radio-paradise.js';
 import { NTS_CONFIG } from './nts.js';
+import { RADIO_BROWSER_CONFIG } from './radio-browser.js';
 import type { SourceConfig, ChannelGenreMapping, ChannelDefinition } from '../types.js';
 
 // Re-export individual source configs
@@ -13,12 +14,14 @@ export { RADIO_PARADISE_CONFIG } from './radio-paradise.js';
 export { RP_CHANNEL_IDS } from './radio-paradise.js';
 export { NTS_CONFIG } from './nts.js';
 export { NTS_MIXTAPE_IDS, NTS_LIVE_CHANNELS } from './nts.js';
+export { RADIO_BROWSER_CONFIG } from './radio-browser.js';
 
 // All sources
 export const SOURCES: readonly SourceConfig[] = [
   SOMAFM_CONFIG,
   RADIO_PARADISE_CONFIG,
   NTS_CONFIG,
+  RADIO_BROWSER_CONFIG,
 ];
 
 /**
