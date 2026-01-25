@@ -1692,6 +1692,130 @@
   color: rgba(255, 255, 255, 0.7);
 }
 
+.welcome-chevron-btn {
+  position: absolute;
+  top: 16px;
+  right: 16px;
+  width: 36px;
+  height: 36px;
+  border: none;
+  background: transparent;
+  color: rgba(255, 255, 255, 0.7);
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 0;
+  transition: color 0.15s ease, transform 0.2s ease;
+}
+
+.welcome-chevron-btn:hover {
+  color: #fff;
+  transform: translateY(2px);
+}
+
+.welcome-chevron-btn svg {
+  width: 24px;
+  height: 24px;
+}
+
+.donation-panel {
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  background: rgba(0, 0, 0, 0.92);
+  backdrop-filter: blur(30px);
+  -webkit-backdrop-filter: blur(30px);
+  border-radius: 20px;
+  padding: 32px;
+  width: 90%;
+  max-width: 500px;
+  box-shadow: 0 20px 60px rgba(0, 0, 0, 0.5);
+  animation: panelIn 0.3s ease forwards;
+}
+
+@keyframes panelIn {
+  from {
+    opacity: 0;
+    transform: translate(-50%, -50%) scale(0.95);
+  }
+  to {
+    opacity: 1;
+    transform: translate(-50%, -50%) scale(1);
+  }
+}
+
+.donation-panel h3 {
+  font-size: 18px;
+  font-weight: 500;
+  margin: 0 0 24px 0;
+  color: #fff;
+  line-height: 1.5;
+  text-align: center;
+}
+
+.donation-links {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  margin-bottom: 24px;
+}
+
+.donation-links a {
+  padding: 12px 20px;
+  background: rgba(255, 255, 255, 0.08);
+  color: #fff;
+  text-decoration: none;
+  border-radius: 10px;
+  text-align: center;
+  font-size: 14px;
+  font-weight: 500;
+  transition: background 0.2s ease, transform 0.1s ease;
+}
+
+.donation-links a:hover {
+  background: rgba(255, 255, 255, 0.15);
+  transform: translateY(-1px);
+}
+
+.donation-actions {
+  display: flex;
+  gap: 12px;
+  padding-top: 16px;
+  border-top: 1px solid rgba(255, 255, 255, 0.1);
+}
+
+.donation-close-btn,
+.donation-dont-show-btn {
+  flex: 1;
+  padding: 12px 20px;
+  border: none;
+  border-radius: 10px;
+  font-size: 14px;
+  font-weight: 500;
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+
+.donation-close-btn {
+  background: rgba(255, 255, 255, 0.1);
+  color: #fff;
+}
+
+.donation-close-btn:hover {
+  background: rgba(255, 255, 255, 0.2);
+}
+
+.donation-dont-show-btn {
+  background: #fff;
+  color: #000;
+}
+
+.donation-dont-show-btn:hover {
+  background: rgba(255, 255, 255, 0.9);
+}
+
 .welcome-sources {
   position: fixed;
   bottom: 48px;
