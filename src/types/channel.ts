@@ -4,6 +4,21 @@
 export type SourceType = 'kexp' | 'somafm' | 'radioparadise' | 'nts' | 'radiobrowser';
 
 /**
+ * Artwork display mode for thumbnails and wallpapers.
+ */
+export type ArtworkMode = 'api-art' | 'station-logo' | 'auto-generated';
+
+/**
+ * Artwork configuration for a channel.
+ */
+export type ArtworkConfig = {
+  thumbnail: ArtworkMode;
+  wallpaper: ArtworkMode;
+  backgroundColor?: string;
+  displayText?: string;
+};
+
+/**
  * Stream quality option
  */
 export type StreamQuality = {
@@ -47,4 +62,5 @@ export type Channel = {
   listeners: number | null;
   homepage: string | null;
   bgColor?: string;
+  artworkConfig?: ArtworkConfig;
 };

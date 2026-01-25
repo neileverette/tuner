@@ -137,6 +137,12 @@ const channelDefinitions: readonly ChannelDefinition[] = [
       medium: 'https://i.1.creatium.io/5f/9c/2c/4e16165627237138cbc3273f76782d56f9/196x196/favicon.png',
       large: 'https://i.1.creatium.io/5f/9c/2c/4e16165627237138cbc3273f76782d56f9/196x196/favicon.png',
     },
+    artworkConfig: {
+      thumbnail: 'auto-generated',
+      wallpaper: 'auto-generated',
+      backgroundColor: '#533483',
+      displayText: 'СПОКОЙНОЕ',
+    },
     streams: [
       { quality: 'medium', format: 'mp3', bitrate: 128, url: 'https://listen9.myradio24.com/6262' },
     ],
@@ -156,6 +162,12 @@ const channelDefinitions: readonly ChannelDefinition[] = [
       { quality: 'medium', format: 'mp3', bitrate: 192, url: 'https://lounge-high.rautemusik.fm/?ref=radiobrowser' },
     ],
     homepage: 'https://www.rm.fm/lounge',
+    artworkConfig: {
+      thumbnail: 'auto-generated',
+      wallpaper: 'auto-generated',
+      backgroundColor: '#d946ef',
+      displayText: 'LOUNGE',
+    },
   },
   {
     id: 'rb-deep-in-space',
@@ -216,6 +228,12 @@ const channelDefinitions: readonly ChannelDefinition[] = [
       { quality: 'high', format: 'mp3', bitrate: 320, url: 'http://stream.deep.radio/hd' },
     ],
     homepage: 'https://deep.radio/',
+    artworkConfig: {
+      thumbnail: 'auto-generated',
+      wallpaper: 'auto-generated',
+      backgroundColor: '#1b4965',
+      displayText: 'DEEP',
+    },
   },
   {
     id: 'rb-record-ambient',
@@ -256,6 +274,12 @@ const channelDefinitions: readonly ChannelDefinition[] = [
       small: 'https://zeno.fm/favicon.ico',
       medium: 'https://zeno.fm/favicon.ico',
       large: 'https://zeno.fm/favicon.ico',
+    },
+    artworkConfig: {
+      thumbnail: 'auto-generated',
+      wallpaper: 'auto-generated',
+      backgroundColor: '#2d6a4f',
+      displayText: '雨声',
     },
     streams: [
       { quality: 'medium', format: 'mp3', bitrate: 128, url: 'https://stream.zeno.fm/689zc32y4x8uv' },
@@ -381,6 +405,12 @@ const channelDefinitions: readonly ChannelDefinition[] = [
       { quality: 'medium', format: 'mp3', bitrate: 128, url: 'https://stm1.srvif.com:7576/;' },
     ],
     homepage: 'https://www.groovewave.com/lounge/lounge.htm',
+    artworkConfig: {
+      thumbnail: 'auto-generated',
+      wallpaper: 'auto-generated',
+      backgroundColor: '#f07b3f',
+      displayText: 'GROOVE',
+    },
   },
   {
     id: 'rb-7rays',
@@ -421,6 +451,12 @@ const channelDefinitions: readonly ChannelDefinition[] = [
       small: 'https://tunein.com/favicon.ico',
       medium: 'https://tunein.com/favicon.ico',
       large: 'https://tunein.com/favicon.ico',
+    },
+    artworkConfig: {
+      thumbnail: 'auto-generated',
+      wallpaper: 'auto-generated',
+      backgroundColor: '#9a031e',
+      displayText: 'EROTICA',
     },
     streams: [
       { quality: 'medium', format: 'mp3', bitrate: 128, url: 'https://stream.zeno.fm/89asra0sfa0uv' },
@@ -471,6 +507,12 @@ const channelDefinitions: readonly ChannelDefinition[] = [
       { quality: 'high', format: 'mp3', bitrate: 320, url: 'http://channels.dinamo.fm/sleep-mp3' },
     ],
     homepage: 'http://www.dinamo.fm/',
+    artworkConfig: {
+      thumbnail: 'auto-generated',
+      wallpaper: 'auto-generated',
+      backgroundColor: '#16213e',
+      displayText: 'SLEEP',
+    },
   },
   {
     id: 'rb-positively-stress',
@@ -501,6 +543,12 @@ const channelDefinitions: readonly ChannelDefinition[] = [
       { quality: 'medium', format: 'mp3', bitrate: 192, url: 'https://streams.rautemusik.fm/techno/mp3-192/?ref=radiobrowser' },
     ],
     homepage: 'https://rm.fm/techno',
+    artworkConfig: {
+      thumbnail: 'auto-generated',
+      wallpaper: 'auto-generated',
+      backgroundColor: '#d946ef',
+      displayText: 'TECHNO',
+    },
   },
   {
     id: 'rb-dark-ambient',
@@ -521,6 +569,12 @@ const channelDefinitions: readonly ChannelDefinition[] = [
     id: 'rb-radio-nature',
     title: 'Radio Nature',
     description: 'Ambient, chill, meditation, nature, relax, zen',
+    artworkConfig: {
+      thumbnail: 'auto-generated',
+      wallpaper: 'auto-generated',
+      backgroundColor: '#2d6a4f',
+      displayText: 'NATURE',
+    },
     dj: null,
     image: {
       small: 'http://radionature.weebly.com/favicon.ico',

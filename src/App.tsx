@@ -349,6 +349,7 @@ function App() {
         prevNtsBgColor={prevNtsBgColor}
         stationId={selectedChannel?.id}
         stationName={selectedChannel?.title}
+        artworkConfig={selectedChannel?.artworkConfig}
       />
 
       {/* Welcome Modal - lazy loaded */}

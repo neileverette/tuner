@@ -1,8 +1,8 @@
 /**
  * Playwright capture script for Tuner promo video.
  *
- * Captures a single static frame of the UI - camera movements
- * are handled in post by Remotion for smooth, precise control.
+ * Captures 240 frames (8 seconds @ 30fps) of the LIVE running app.
+ * Each frame is a screenshot of the actual UI at that moment in time.
  *
  * Usage: npm run capture
  */
@@ -14,18 +14,41 @@ import * as path from "path";
 const FPS = 30;
 const DURATION_SECONDS = 8;
 const TOTAL_FRAMES = FPS * DURATION_SECONDS; // 240 frames
+const FRAME_INTERVAL_MS = 1000 / FPS; // ~33.33ms per frame
 
 // Output directory for captured frames
 const FRAMES_DIR = path.join(process.cwd(), "public", "frames");
 
 // Your app URL - change if running on different port
-const APP_URL = process.env.APP_URL || "http://localhost:5173";
+const APP_URL = process.env.APP_URL || "https://tunr-music.com";
+
+/**
+ * Simulate UI interactions during capture to show dynamic content.
+ * This makes the video more interesting than a static screenshot.
+ */
+async function simulateInteractions(page: Page, currentFrame: number) {
+  // At frame 60 (2 seconds): Press right arrow to change station
+  if (currentFrame === 60) {
+    await page.keyboard.press("ArrowRight");
+  }
+
+  // At frame 120 (4 seconds): Press right arrow again
+  if (currentFrame === 120) {
+    await page.keyboard.press("ArrowRight");
+  }
+
+  // At frame 180 (6 seconds): Press right arrow one more time
+  if (currentFrame === 180) {
+    await page.keyboard.press("ArrowRight");
+  }
+}
 
 async function captureFrames() {
-  console.log("🎬 Starting Tuner hero capture (8 seconds)...\n");
+  console.log(`🎬 Starting Tuner frame capture (${DURATION_SECONDS} seconds @ ${FPS}fps)...\n`);
 
   // Clean and create frames directory
   if (fs.existsSync(FRAMES_DIR)) {
+    console.log("🗑️  Cleaning old frames...");
     fs.rmSync(FRAMES_DIR, { recursive: true });
   }
   fs.mkdirSync(FRAMES_DIR, { recursive: true });
@@ -57,29 +80,36 @@ async function captureFrames() {
     await page.waitForTimeout(500);
   }
 
-  // Ensure we have a nice state - maybe navigate to a good station
-  await page.keyboard.press("ArrowRight");
-  await page.waitForTimeout(600); // Wait for transition
+  console.log(`📸 Capturing ${TOTAL_FRAMES} frames...\n`);
 
-  console.log("📸 Capturing hero frame...");
-
-  // Capture a single high-quality frame
-  // We'll duplicate it for all frames since camera movement is in Remotion
-  const heroFrame = path.join(FRAMES_DIR, "hero.png");
-  await page.screenshot({
-    path: heroFrame,
-    type: "png",
-  });
-
-  // Create symlinks or copies for each frame (Remotion expects numbered frames)
-  // Using a single image and letting Remotion handle the camera = smoother results
-  console.log(`📁 Creating ${TOTAL_FRAMES} frame references...`);
+  // Capture each frame
+  const startTime = Date.now();
 
   for (let i = 0; i < TOTAL_FRAMES; i++) {
+    // Simulate interactions at specific frames
+    await simulateInteractions(page, i);
+
+    // Capture frame
     const filename = `frame-${String(i).padStart(6, "0")}.png`;
     const filepath = path.join(FRAMES_DIR, filename);
-    // Copy the hero frame (symlinks can cause issues on some systems)
-    fs.copyFileSync(heroFrame, filepath);
+
+    await page.screenshot({
+      path: filepath,
+      type: "png",
+    });
+
+    // Progress indicator every 30 frames (1 second)
+    if ((i + 1) % 30 === 0) {
+      const progress = ((i + 1) / TOTAL_FRAMES) * 100;
+      const elapsed = ((Date.now() - startTime) / 1000).toFixed(1);
+      console.log(
+        `  ⏱️  ${i + 1}/${TOTAL_FRAMES} frames (${progress.toFixed(0)}%) - ${elapsed}s elapsed`
+      );
+    }
+
+    // Small delay between frames to allow any animations to progress
+    // (not strictly necessary but can help with smooth transitions)
+    await page.waitForTimeout(10);
   }
 
   // Write manifest
@@ -91,8 +121,9 @@ async function captureFrames() {
         fps: FPS,
         totalFrames: TOTAL_FRAMES,
         durationSeconds: DURATION_SECONDS,
-        mode: "static-hero", // Single frame with camera movement
-        heroFrame: "hero.png",
+        mode: "live-capture",
+        capturedAt: new Date().toISOString(),
+        appUrl: APP_URL,
       },
       null,
       2
@@ -101,9 +132,11 @@ async function captureFrames() {
 
   await browser.close();
 
-  console.log(`\n✅ Captured hero frame`);
-  console.log(`📋 Created ${TOTAL_FRAMES} frames for ${DURATION_SECONDS}s video`);
-  console.log(`\n🎥 Run 'npm run studio' to preview camera movements\n`);
+  const totalTime = ((Date.now() - startTime) / 1000).toFixed(1);
+
+  console.log(`\n✅ Captured ${TOTAL_FRAMES} frames in ${totalTime}s`);
+  console.log(`📋 Output: ${FRAMES_DIR}`);
+  console.log(`\n🎥 Run 'npm run studio' to preview with camera movements\n`);
 }
 
 // Run capture

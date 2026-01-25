@@ -1,13 +1,12 @@
 import React from "react";
 import {
   AbsoluteFill,
-  Img,
-  staticFile,
   useCurrentFrame,
   interpolate,
   spring,
   useVideoConfig,
-  Easing,
+  Img,
+  staticFile,
 } from "remotion";
 
 /**
@@ -22,6 +21,8 @@ import {
  * [0:08]     Frame 240  - Settle into final position
  *
  * Camera Style: Dynamic with 2-3° inertial tilts following direction of travel
+ *
+ * Uses LIVE-CAPTURED frames from Playwright automation (no static PNG)
  */
 
 const FPS = 30;
@@ -36,26 +37,22 @@ interface CameraKeyframe {
 }
 
 const keyframes: CameraKeyframe[] = [
-  // [0:00] Establishing shot - full UI, centered
-  { frame: 0, x: 0, y: 0, scale: 1, rotate: 0 },
+  // [0:00] Start: Upper Left Corner (Zoomed in)
+  { frame: 0, x: -350, y: -600, scale: 2.2, rotate: 0 },
 
-  // [0:01.5] Aggressive push-in toward bottom-left player
-  // Tilt left 2° following the diagonal movement
-  { frame: 45, x: -350, y: 280, scale: 1.8, rotate: -2 },
+  // [0:02.5] Move Down to Station Name (Bottom Left)
+  // Tilt up slightly to anticipate the stop
+  { frame: 75, x: -350, y: 550, scale: 2.2, rotate: 1 },
 
-  // [0:03.5] Settle on bottom-left "Grooving tune unknown" area
-  // Slight counter-rotation as momentum settles
-  { frame: 105, x: -320, y: 260, scale: 1.75, rotate: -0.5 },
+  // [0:03.5] Hold briefly on station name
+  { frame: 105, x: -350, y: 550, scale: 2.2, rotate: 1 },
 
-  // [0:05.5] Horizontal pan right across album/station cards
-  // Tilt right 3° following rightward momentum
-  { frame: 165, x: 350, y: 200, scale: 1.6, rotate: 3 },
+  // [0:05.5] Pan Right to Play Button (Center Bottom)
+  // Tilt right following movement
+  { frame: 165, x: 0, y: 550, scale: 2.2, rotate: 2 },
 
-  // [0:07] Rapid pull-back begins, straightening rotation
-  { frame: 210, x: 50, y: 30, scale: 1.1, rotate: 0.5 },
-
-  // [0:08] Final settle - perfectly centered
-  { frame: 240, x: 0, y: 0, scale: 1, rotate: 0 },
+  // [0:08] Slight pull back to reveal a bit more context
+  { frame: 240, x: 0, y: 550, scale: 1.8, rotate: 0 },
 ];
 
 /**
@@ -101,17 +98,25 @@ function getCameraState(frame: number, fps: number) {
 }
 
 /**
- * Main composition - cinematic camera over static UI.
+ * Main composition - cinematic camera over live-captured UI frames.
+ * Run `npm run capture` to capture fresh frames from your running app.
  */
 export const FrameSequence: React.FC = () => {
   const frame = useCurrentFrame();
-  const { fps } = useVideoConfig();
+  const { fps, width, height } = useVideoConfig();
 
   const camera = getCameraState(frame, fps);
 
+  // Use the specific frame image captured from the live UI
+  const frameNumber = String(frame).padStart(6, "0");
+  const framePath = `frames/frame-${frameNumber}.png`;
+
+  // Detect vertical (9:16) vs horizontal (16:9) format
+  const isVertical = height > width;
+
   return (
     <AbsoluteFill style={{ backgroundColor: "#000", overflow: "hidden" }}>
-      {/* The UI image with camera transforms applied */}
+      {/* Live-captured UI frame with camera transforms */}
       <AbsoluteFill
         style={{
           transform: `
@@ -123,11 +128,14 @@ export const FrameSequence: React.FC = () => {
         }}
       >
         <Img
-          src={staticFile("frames/hero.png")}
+          src={staticFile(framePath)}
           style={{
-            width: "100%",
-            height: "100%",
+            width: isVertical ? "auto" : "100%",
+            height: isVertical ? "100%" : "auto",
             objectFit: "cover",
+            // For vertical, ensure the frame fills the height and crops width
+            minWidth: isVertical ? "100%" : "auto",
+            minHeight: isVertical ? "100%" : "auto",
           }}
         />
       </AbsoluteFill>
@@ -140,7 +148,7 @@ export const FrameSequence: React.FC = () => {
  */
 export const FrameSequenceDebug: React.FC = () => {
   const frame = useCurrentFrame();
-  const { fps } = useVideoConfig();
+  const { fps, width, height } = useVideoConfig();
 
   const camera = getCameraState(frame, fps);
 
@@ -150,6 +158,11 @@ export const FrameSequenceDebug: React.FC = () => {
   else if (frame >= 165) currentSection = "Pan Right (Cards)";
   else if (frame >= 105) currentSection = "Settle (Player)";
   else if (frame >= 45) currentSection = "Push-in";
+
+  const frameNumber = String(frame).padStart(6, "0");
+  const framePath = `frames/frame-${frameNumber}.png`;
+
+  const isVertical = height > width;
 
   return (
     <AbsoluteFill style={{ backgroundColor: "#000", overflow: "hidden" }}>
@@ -164,11 +177,13 @@ export const FrameSequenceDebug: React.FC = () => {
         }}
       >
         <Img
-          src={staticFile("frames/hero.png")}
+          src={staticFile(framePath)}
           style={{
-            width: "100%",
-            height: "100%",
+            width: isVertical ? "auto" : "100%",
+            height: isVertical ? "100%" : "auto",
             objectFit: "cover",
+            minWidth: isVertical ? "100%" : "auto",
+            minHeight: isVertical ? "100%" : "auto",
           }}
         />
       </AbsoluteFill>
@@ -185,6 +200,7 @@ export const FrameSequenceDebug: React.FC = () => {
           borderRadius: 8,
           fontFamily: "monospace",
           fontSize: 14,
+          zIndex: 1000,
         }}
       >
         <div>Frame: {frame} / 240</div>

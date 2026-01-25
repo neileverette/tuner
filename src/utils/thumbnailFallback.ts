@@ -2,6 +2,17 @@
  * Utility for generating fallback thumbnails for stations without artwork
  */
 
+import {
+  shouldUseFallbackThumbnail,
+  shouldUseFallbackCover,
+  getCustomColor,
+  getCustomInitials,
+  getFallbackStyle,
+  getThumbnailMode,
+  getCoverMode,
+  cleanStationName
+} from '../config/artwork-overrides';
+
 // Generate seeded random number from string - using mulberry32 algorithm
 function seededRandom(seed: string, index: number): number {
   let h = 0
@@ -70,8 +81,24 @@ export function extractInitials(name: string): string {
 
 /**
  * Check if a station needs a fallback thumbnail
+ * Now also checks artwork override configuration
  */
-export function needsFallbackThumbnail(imageUrl: string | null | undefined): boolean {
+export function needsFallbackThumbnail(
+  imageUrl: string | null | undefined,
+  stationId?: string,
+  isHeroView: boolean = false
+): boolean {
+  // Check if station is configured to force fallback
+  if (stationId) {
+    if (isHeroView && shouldUseFallbackCover(stationId)) {
+      return true;
+    }
+    if (!isHeroView && shouldUseFallbackThumbnail(stationId)) {
+      return true;
+    }
+  }
+  
+  // Default behavior: check if image URL is empty
   return !imageUrl || imageUrl.trim() === ''
 }
 
@@ -82,19 +109,32 @@ export interface FallbackThumbnail {
   backgroundColor: string
   initials: string
   needsFallback: boolean
+  style?: 'solid' | 'gradient' | 'pattern'
+  displayMode?: 'initials' | 'full-name'
+  fullName?: string
 }
 
 export function generateFallbackThumbnail(
   stationId: string,
   stationName: string,
-  imageUrl: string | null | undefined
+  imageUrl: string | null | undefined,
+  isHeroView: boolean = false
 ): FallbackThumbnail {
-  const needsFallback = needsFallbackThumbnail(imageUrl)
+  const needsFallback = needsFallbackThumbnail(imageUrl, stationId, isHeroView)
+  
+  // Check for custom overrides
+  const customColor = getCustomColor(stationId);
+  const customInitials = getCustomInitials(stationId);
+  const style = getFallbackStyle(stationId);
+  const displayMode = isHeroView ? getCoverMode(stationId) : getThumbnailMode(stationId);
   
   return {
-    backgroundColor: generateFallbackColor(stationId),
-    initials: extractInitials(stationName),
+    backgroundColor: customColor ?? generateFallbackColor(stationId),
+    initials: customInitials ?? extractInitials(stationName),
     needsFallback,
+    style,
+    displayMode,
+    fullName: cleanStationName(stationName),
   }
 }
 

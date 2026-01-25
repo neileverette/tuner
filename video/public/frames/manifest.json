@@ -2,6 +2,7 @@
   "fps": 30,
   "totalFrames": 240,
   "durationSeconds": 8,
-  "mode": "static-hero",
-  "heroFrame": "hero.png"
+  "mode": "live-capture",
+  "capturedAt": "2026-01-25T06:40:03.778Z",
+  "appUrl": "https://tunr-music.com"
 }
