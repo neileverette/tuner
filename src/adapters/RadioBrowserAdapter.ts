@@ -48,6 +48,7 @@ export class RadioBrowserAdapter implements SourceAdapter {
         nowPlaying: null,
         listeners: null,
         homepage: def.homepage,
+        artworkConfig: def.artworkConfig,
       };
     });
 

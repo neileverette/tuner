@@ -46,6 +46,28 @@ export interface StreamDefinition {
 }
 
 /**
+ * Artwork display mode for thumbnails and wallpapers.
+ */
+export type ArtworkMode = 'api-art' | 'station-logo' | 'auto-generated';
+
+/**
+ * Artwork configuration for a channel.
+ */
+export interface ArtworkConfig {
+  /** Artwork mode for thumbnail (carousel view) */
+  readonly thumbnail: ArtworkMode;
+  
+  /** Artwork mode for wallpaper (hero/background view) */
+  readonly wallpaper: ArtworkMode;
+  
+  /** Custom background color for auto-generated artwork (optional) */
+  readonly backgroundColor?: string;
+  
+  /** Custom text/initials for auto-generated artwork (optional) */
+  readonly displayText?: string;
+}
+
+/**
  * Static channel metadata (combined with live API data at runtime).
  */
 export interface ChannelDefinition {
@@ -73,6 +95,9 @@ export interface ChannelDefinition {
 
   /** Channel homepage URL */
   readonly homepage: string | null;
+  
+  /** Artwork configuration (optional - defaults to using image URLs) */
+  readonly artworkConfig?: ArtworkConfig;
 }
 
 /**
