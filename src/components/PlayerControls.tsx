@@ -19,9 +19,10 @@ function PlayerControls({
   onPlayPause,
   onPrev,
   onNext,
-  onOpenStationPicker,
+  onOpenStationPicker: _onOpenStationPicker,
   visible
 }: PlayerControlsProps) {
+  void _onOpenStationPicker // Preserved for future use
   const [displayedChannel, setDisplayedChannel] = useState(currentChannel)
   const [displayedTrack, setDisplayedTrack] = useState(currentTrack)
   const [isTransitioning, setIsTransitioning] = useState(false)
@@ -52,7 +53,7 @@ function PlayerControls({
 
   return (
     <div className={`controls ${visible ? 'visible' : ''}`}>
-      <div className="track-info" onClick={onOpenStationPicker}>
+      <div className="track-info">
         <span className={`playlist-name ${isTransitioning ? 'transitioning' : ''}`}>
           {displayedChannel?.title || 'Select Station'}
         </span>

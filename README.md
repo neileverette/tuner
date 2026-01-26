@@ -8,6 +8,7 @@ A modern internet radio player that aggregates streams from multiple sources int
 
 - **Multi-Source Streaming** — 50+ channels from SomaFM, Radio Paradise, and KEXP
 - **Real-Time Now Playing** — Track info with album artwork from each source
+- **Social Sharing** — Share stations with friends via Facebook, Twitter, WhatsApp, and 100+ platforms
 - **Favorites** — Per-device favorites stored in localStorage
 - **Keyboard Navigation** — Arrow keys to browse, spacebar to play/pause
 - **Beautiful UI** — Full-screen album art with smooth crossfade transitions
@@ -114,6 +115,7 @@ src/
 │   ├── PlayerControls.tsx
 │   ├── StationPicker.tsx
 │   ├── HeroArtwork.tsx
+│   ├── ShareButton.tsx     # Social sharing
 │   └── SplashScreen.tsx
 ├── config/
 │   ├── genres.ts
@@ -128,6 +130,9 @@ src/
 server/
 ├── index.js                # Development server
 └── production.js           # Production server
+
+docs/
+└── SHARE_FEATURE.md        # Share feature documentation
 ```
 
 ## Getting Started

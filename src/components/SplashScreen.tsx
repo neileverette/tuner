@@ -3,6 +3,8 @@ interface SplashScreenProps {
   backgroundImage: string
 }
 
+import tunerLogo from '../assets/tuner-logo.svg'
+
 function SplashScreen({ phase, backgroundImage }: SplashScreenProps) {
   return (
     <div className={`splash-screen ${phase}`}>
@@ -11,7 +13,7 @@ function SplashScreen({ phase, backgroundImage }: SplashScreenProps) {
         style={{ backgroundImage: backgroundImage ? `url(${backgroundImage})` : undefined }}
       />
       <div className="splash-overlay" />
-      <img src="/tuner-logo.svg" alt="tunr" className="splash-logo" />
+      <img src={tunerLogo} alt="tunr" className="splash-logo" />
     </div>
   )
 }
