@@ -11,11 +11,15 @@
     "build:config": "tsc -p tsconfig.server.json",
     "lint": "eslint .",
     "preview": "vite preview",
-    "start": "node server/production.js"
+    "start": "node server/production.js",
+    "video": "remotion preview remotion/index.ts"
   },
   "dependencies": {
+    "@remotion/cli": "4.0.409",
+    "@remotion/player": "4.0.409",
     "react": "^19.2.0",
-    "react-dom": "^19.2.0"
+    "react-dom": "^19.2.0",
+    "remotion": "4.0.409"
   },
   "devDependencies": {
     "@eslint/js": "^9.39.1",

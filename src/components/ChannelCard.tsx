@@ -1,6 +1,7 @@
 import { useState } from 'react'
 import type { Channel } from '../types'
 import { generateFallbackThumbnail } from '../utils/thumbnailFallback'
+import GeneratedArtwork from './GeneratedArtwork'
 
 interface ChannelCardProps {
   channel: Channel
@@ -148,20 +149,12 @@ function ChannelCard({ channel, index, isSelected, onSelect, overrideImage, isFa
             <img src={channel.image.medium} alt="NTS" className="nts-logo-img" />
           </div>
         ) : fallback.needsFallback ? (
-          <div
-            className={`fallback-thumbnail ${fallback.displayMode === 'full-name' ? 'fallback-full-name' : ''} ${fallback.style ? `fallback-${fallback.style}` : ''}`}
-            style={{
-              backgroundColor: fallback.backgroundColor,
-              '--fallback-color-1': fallback.backgroundColor,
-              '--fallback-color-2': fallback.backgroundColor + 'dd',
-            } as React.CSSProperties}
-          >
-            {fallback.displayMode === 'full-name' ? (
-              <span className="fallback-name-text">{fallback.fullName}</span>
-            ) : (
-              <span className="fallback-initials">{fallback.initials}</span>
-            )}
-          </div>
+          <GeneratedArtwork
+            stationId={channel.id}
+            stationName={channel.title}
+            size="thumbnail"
+            className="fallback-thumbnail"
+          />
         ) : isSmallImage ? (
           <div className="small-logo-container">
             <img
