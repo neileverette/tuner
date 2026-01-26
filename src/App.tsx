@@ -1,11 +1,13 @@
 import { useState, useEffect, useCallback, useRef, useMemo, lazy, Suspense } from 'react'
 import './App.css'
+import tunerLogo from './assets/tuner-logo.svg'
 import ChannelCarousel from './components/ChannelCarousel'
 import PlayerControls from './components/PlayerControls'
 import SortDropdown from './components/SortDropdown'
 import HeroArtwork from './components/HeroArtwork'
 import SplashScreen from './components/SplashScreen'
-import { useChannels, useNowPlaying, useFavorites, useGenreFilter, useStreamHealth } from './hooks'
+import ShareButton from './components/ShareButton'
+import { useChannels, useNowPlaying, useFavorites, useGenreFilter, useStreamHealth, useStationHealthScanner } from './hooks'
 import type { SortOption } from './types'
 import { sortChannels, filterChannelsByGenre } from './utils'
 import GenreFilter from './components/GenreFilter'
@@ -35,10 +37,22 @@ function App() {
   })
   const [isPlaying, setIsPlaying] = useState(false)
 
-  // Filter channels by genre, then sort
+  // Health scanner - filters out broken stations
+  const {
+    healthyChannels,
+    isScanning,
+    unhealthyCount,
+  } = useStationHealthScanner(channels, getStreamUrl, {
+    scanInterval: 5 * 60 * 1000, // Re-scan every 5 minutes
+    checkTimeout: 8000, // 8 second timeout per station
+    concurrency: 5, // Check 5 stations at a time
+    enabled: true,
+  })
+
+  // Filter channels by genre, then sort (using healthy channels)
   const filteredChannels = useMemo(() => {
-    return filterChannelsByGenre(channels, enabledGenres)
-  }, [channels, enabledGenres])
+    return filterChannelsByGenre(healthyChannels, enabledGenres)
+  }, [healthyChannels, enabledGenres])
 
   const sortedChannels = useMemo(() => {
     return sortChannels(filteredChannels, sortOption)
@@ -71,9 +85,7 @@ function App() {
   const [showStationPicker, setShowStationPicker] = useState(false)
   const [emailCopied, setEmailCopied] = useState(false)
   const [streamError, setStreamError] = useState<string | null>(null)
-  const [showWelcome, setShowWelcome] = useState(() => {
-    return localStorage.getItem('tuner-welcome-dismissed') !== 'true'
-  })
+  const [showWelcome, setShowWelcome] = useState(true)
   const [showSplash, setShowSplash] = useState(true)
   const [splashPhase, setSplashPhase] = useState<'visible' | 'fading' | 'hidden'>('visible')
   const [headerVisible, setHeaderVisible] = useState(false)
@@ -282,6 +294,11 @@ function App() {
           e.preventDefault()
           handlePlayPause()
           break
+        case '?':
+          // Toggle welcome modal with '?' key
+          e.preventDefault()
+          setShowWelcome(prev => !prev)
+          break
       }
     }
 
@@ -325,7 +342,7 @@ function App() {
 
       {/* Header with logo - hidden while welcome banner is showing */}
       <header className={`app-header ${headerVisible && !showWelcome ? 'visible' : ''}`}>
-        <img src="/tuner-logo.svg" alt="tunr" className="header-logo" />
+        <img src={tunerLogo} alt="tunr" className="header-logo" />
       </header>
 
       {/* Splash Screen */}
@@ -368,6 +385,13 @@ function App() {
         </Suspense>
       )}
 
+      {/* Share Button - visible on home page */}
+      <ShareButton
+        stationName={selectedChannel?.title || ''}
+        visible={contentVisible}
+        disabled={!selectedChannel}
+      />
+
       {/* Error Banner - Channel fetch error */}
       {error && (
         <div className={`error-banner ${contentVisible ? 'visible' : ''}`}>
@@ -396,11 +420,12 @@ function App() {
           onClick={() => setShowStationPicker(true)}
         >
           {isLoading ? 'Loading stations...' :
-            sortedChannels.length > 0
-              ? `${sortedChannels.length} stations${isFiltering ? ' (filtered)' : ''}`
-              : enabledCount === 0
-                ? 'No genres selected'
-                : 'No stations available'}
+            isScanning ? `Checking stations... (${sortedChannels.length} available)` :
+              sortedChannels.length > 0
+                ? `${sortedChannels.length} stations${isFiltering ? ' (filtered)' : ''}${unhealthyCount > 0 ? ` · ${unhealthyCount} offline` : ''}`
+                : enabledCount === 0
+                  ? 'No genres selected'
+                  : 'No stations available'}
           <span className="material-symbols-outlined menu-icon">menu_open</span>
         </div>
 
