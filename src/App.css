@@ -593,6 +593,32 @@
   outline: none !important;
   border: none !important;
 }
+
+/* Generated Artwork */
+.generated-artwork {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  border-radius: 4px;
+}
+
+.generated-artwork-loading {
+  animation: pulse 1.5s ease-in-out infinite;
+}
+
+@keyframes pulse {
+  0%, 100% { opacity: 0.6; }
+  50% { opacity: 0.8; }
+}
+
+/* Hero generated artwork needs full positioning */
+.hero-image.generated-artwork {
+  position: absolute;
+  top: 0;
+  left: 0;
+  border-radius: 0;
+}
+
 /* Fallback Thumbnail for Carousel */
 .fallback-thumbnail {
   width: 100%;
@@ -1307,6 +1333,250 @@
   width: auto;
 }
 
+/* Share Button Container */
+.share-button-container {
+  position: fixed;
+  top: 24px;
+  right: 24px;
+  z-index: 9999;
+  opacity: 1;
+  transform: translateX(0);
+  transition: opacity 0.5s ease, transform 0.5s cubic-bezier(0.25, 0.46, 0.45, 0.94);
+}
+
+.share-button-container.visible {
+  opacity: 1;
+  transform: translateX(0);
+}
+
+/* Pill-style Share Button - larger, darker style */
+.share-pill-button {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  height: 36px;
+  background: rgba(0, 0, 0, 0.6);
+  backdrop-filter: blur(12px);
+  -webkit-backdrop-filter: blur(12px);
+  border: 1px solid rgba(255, 255, 255, 0.2);
+  border-radius: 18px;
+  color: rgba(255, 255, 255, 0.95);
+  font-size: 14px;
+  font-weight: 500;
+  padding: 0 16px;
+  cursor: pointer;
+  transition: all 0.15s ease;
+}
+
+.share-pill-button:hover:not(:disabled) {
+  background: rgba(0, 0, 0, 0.8);
+  border-color: rgba(255, 255, 255, 0.3);
+  color: white;
+}
+
+.share-pill-button:active:not(:disabled) {
+  transform: scale(0.97);
+}
+
+.share-pill-button:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+
+.share-pill-button .material-symbols-outlined {
+  font-size: 16px;
+  line-height: 1;
+}
+
+/* Share Dropdown - matches donation panel */
+.share-dropdown {
+  position: absolute;
+  top: calc(100% + 8px);
+  right: 0;
+  width: 300px;
+  background: rgba(0, 0, 0, 0.92);
+  backdrop-filter: blur(30px);
+  -webkit-backdrop-filter: blur(30px);
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  border-radius: 16px;
+  padding: 16px;
+  box-shadow: 0 20px 60px rgba(0, 0, 0, 0.5);
+  animation: dropdownIn 0.2s ease forwards;
+}
+
+@keyframes dropdownIn {
+  from {
+    opacity: 0;
+    transform: translateY(-8px) scale(0.95);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0) scale(1);
+  }
+}
+
+.share-dropdown-header {
+  padding: 0 0 12px 0;
+  font-size: 13px;
+  font-weight: 600;
+  color: rgba(255, 255, 255, 0.7);
+  text-align: center;
+}
+
+/* Grid layout for share options - 3x2 grid */
+.share-dropdown-grid {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 8px;
+}
+
+.share-dropdown-item {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 12px 16px;
+  background: rgba(255, 255, 255, 0.08);
+  border: none;
+  border-radius: 10px;
+  color: #fff;
+  font-size: 13px;
+  font-weight: 500;
+  font-family: inherit;
+  text-align: center;
+  cursor: pointer;
+  transition: background 0.2s ease, transform 0.1s ease;
+}
+
+.share-dropdown-item:hover {
+  background: rgba(255, 255, 255, 0.15);
+  transform: translateY(-1px);
+}
+
+.share-option-icon {
+  width: 36px;
+  height: 36px;
+  border-radius: 8px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 18px;
+  font-weight: 700;
+  color: #fff;
+  flex-shrink: 0;
+}
+
+.share-option-icon svg {
+  color: #fff;
+}
+
+.share-option-name {
+  flex: 1;
+  text-align: left;
+}
+
+.share-dropdown-divider {
+  height: 1px;
+  background: rgba(255, 255, 255, 0.1);
+  margin: 8px 0;
+}
+
+/* Share Copied Toast */
+.share-copied-toast {
+  position: fixed;
+  top: 80px;
+  right: 24px;
+  z-index: 1002;
+  background: rgba(0, 0, 0, 0.9);
+  backdrop-filter: blur(10px);
+  -webkit-backdrop-filter: blur(10px);
+  color: #fff;
+  padding: 12px 20px;
+  border-radius: 8px;
+  font-size: 14px;
+  font-weight: 500;
+  animation: slideInFadeOut 2s ease forwards;
+  pointer-events: none;
+}
+
+@keyframes slideInFadeOut {
+  0% {
+    opacity: 0;
+    transform: translateY(-10px);
+  }
+  10% {
+    opacity: 1;
+    transform: translateY(0);
+  }
+  90% {
+    opacity: 1;
+    transform: translateY(0);
+  }
+  100% {
+    opacity: 0;
+    transform: translateY(-10px);
+  }
+}
+
+/* Responsive adjustments for Share Button */
+@media (max-width: 768px) {
+  .share-button-container {
+    top: 20px;
+    right: 20px;
+  }
+
+  .share-pill-button {
+    height: 40px;
+    padding: 0 18px 0 14px;
+  }
+
+  .share-pill-button .material-symbols-outlined {
+    font-size: 20px;
+  }
+
+  .share-label {
+    font-size: 14px;
+  }
+
+  .share-copied-toast {
+    top: 75px;
+    right: 20px;
+  }
+}
+
+@media (max-width: 480px) {
+  .share-button-container {
+    top: 16px;
+    right: 16px;
+  }
+
+  .share-pill-button {
+    height: 44px;
+    padding: 0 20px 0 16px;
+    border-radius: 22px;
+  }
+
+  .share-dropdown {
+    right: -8px;
+    min-width: 200px;
+  }
+
+  .share-copied-toast {
+    top: 70px;
+    right: 16px;
+    font-size: 13px;
+    padding: 10px 16px;
+  }
+}
+
+/* Fallback for browsers without backdrop-filter support */
+@supports not (backdrop-filter: blur(10px)) {
+  .share-dropdown {
+    background: rgba(0, 0, 0, 0.95);
+  }
+}
+
+}
+
 /* Splash Screen */
 .splash-screen {
   position: fixed;
@@ -1680,7 +1950,8 @@
   position: fixed;
   inset: 0;
   z-index: 100;
-  cursor: pointer;
+  background: transparent;
+  pointer-events: none;
 }
 
 .welcome-banner {
@@ -1689,7 +1960,8 @@
   top: 5%;
   width: 50%;
   max-width: 600px;
-  cursor: default;
+  cursor: pointer;
+  pointer-events: auto;
   background: rgba(0, 0, 0, 0.75);
   backdrop-filter: blur(20px);
   -webkit-backdrop-filter: blur(20px);
