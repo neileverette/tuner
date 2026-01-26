@@ -72,9 +72,9 @@ jobs:
             # Pull latest image
             docker pull ${{ env.ECR_REGISTRY }}/${{ env.ECR_REPOSITORY }}:${{ env.DOCKER_TAG }}
             
-            # Stop and remove ALL containers using port 3001
-            docker ps -a | grep -E 'tuner-testing|tuner-staging' | awk '{print $1}' | xargs -r docker stop || true
-            docker ps -a | grep -E 'tuner-testing|tuner-staging' | awk '{print $1}' | xargs -r docker rm || true
+            # Stop and remove existing container
+            docker stop ${{ env.CONTAINER_NAME }} || true
+            docker rm ${{ env.CONTAINER_NAME }} || true
             
             # Kill any process using port 3001
             sudo lsof -ti:${{ env.CONTAINER_PORT }} | xargs -r sudo kill -9 || true
