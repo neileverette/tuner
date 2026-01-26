@@ -1,6 +1,5 @@
 import { useState, useEffect, useCallback, useRef, useMemo, lazy, Suspense } from 'react'
 import './App.css'
-import tunerLogo from './assets/tuner-logo.svg'
 import ChannelCarousel from './components/ChannelCarousel'
 import PlayerControls from './components/PlayerControls'
 import SortDropdown from './components/SortDropdown'
@@ -330,7 +329,7 @@ function App() {
 
       {/* Header with logo - hidden while welcome banner is showing */}
       <header className={`app-header ${headerVisible && !showWelcome ? 'visible' : ''}`}>
-        <img src={tunerLogo} alt="tunr" className="header-logo" />
+        <img src="/tuner-logo.svg" alt="tunr" className="header-logo" />
       </header>
 
       {/* Splash Screen */}
