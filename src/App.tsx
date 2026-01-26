@@ -7,7 +7,7 @@ import SortDropdown from './components/SortDropdown'
 import HeroArtwork from './components/HeroArtwork'
 import SplashScreen from './components/SplashScreen'
 import ShareButton from './components/ShareButton'
-import { useChannels, useNowPlaying, useFavorites, useGenreFilter, useStreamHealth, useStationHealthScanner } from './hooks'
+import { useChannels, useNowPlaying, useFavorites, useGenreFilter, useStreamHealth } from './hooks'
 import type { SortOption } from './types'
 import { sortChannels, filterChannelsByGenre } from './utils'
 import GenreFilter from './components/GenreFilter'
@@ -37,22 +37,10 @@ function App() {
   })
   const [isPlaying, setIsPlaying] = useState(false)
 
-  // Health scanner - filters out broken stations
-  const {
-    healthyChannels,
-    isScanning,
-    unhealthyCount,
-  } = useStationHealthScanner(channels, getStreamUrl, {
-    scanInterval: 5 * 60 * 1000, // Re-scan every 5 minutes
-    checkTimeout: 8000, // 8 second timeout per station
-    concurrency: 5, // Check 5 stations at a time
-    enabled: true,
-  })
-
-  // Filter channels by genre, then sort (using healthy channels)
+  // Filter channels by genre, then sort
   const filteredChannels = useMemo(() => {
-    return filterChannelsByGenre(healthyChannels, enabledGenres)
-  }, [healthyChannels, enabledGenres])
+    return filterChannelsByGenre(channels, enabledGenres)
+  }, [channels, enabledGenres])
 
   const sortedChannels = useMemo(() => {
     return sortChannels(filteredChannels, sortOption)
@@ -420,12 +408,11 @@ function App() {
           onClick={() => setShowStationPicker(true)}
         >
           {isLoading ? 'Loading stations...' :
-            isScanning ? `Checking stations... (${sortedChannels.length} available)` :
-              sortedChannels.length > 0
-                ? `${sortedChannels.length} stations${isFiltering ? ' (filtered)' : ''}${unhealthyCount > 0 ? ` · ${unhealthyCount} offline` : ''}`
-                : enabledCount === 0
-                  ? 'No genres selected'
-                  : 'No stations available'}
+            sortedChannels.length > 0
+              ? `${sortedChannels.length} stations${isFiltering ? ' (filtered)' : ''}`
+              : enabledCount === 0
+                ? 'No genres selected'
+                : 'No stations available'}
           <span className="material-symbols-outlined menu-icon">menu_open</span>
         </div>
 
