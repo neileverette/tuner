@@ -69,7 +69,10 @@ jobs:
             aws ecr get-login-password --region ${{ env.AWS_REGION }} | \
               docker login --username AWS --password-stdin ${{ env.ECR_REGISTRY }}
             
-            # Pull latest image
+            # Remove old cached image to force fresh pull
+            docker rmi ${{ env.ECR_REGISTRY }}/${{ env.ECR_REPOSITORY }}:${{ env.DOCKER_TAG }} || true
+
+            # Pull latest image (fresh, not cached)
             docker pull ${{ env.ECR_REGISTRY }}/${{ env.ECR_REPOSITORY }}:${{ env.DOCKER_TAG }}
             
             # Stop and remove existing container by name
