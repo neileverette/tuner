@@ -15,7 +15,13 @@ import GenreFilter from './components/GenreFilter'
 const StationPicker = lazy(() => import('./components/StationPicker'))
 const WelcomeModal = lazy(() => import('./components/WelcomeModal'))
 
-function App() {
+interface AppProps {
+  isAnimationMode?: boolean
+  showWelcomeOverride?: boolean
+  onReady?: () => void
+}
+
+function App({ isAnimationMode = false, showWelcomeOverride = false, onReady }: AppProps) {
   const { channels, isLoading, error, refetch, getStreamUrl } = useChannels()
   const { isFavorite, toggleFavorite } = useFavorites()
   const { startTimeout: startStreamTimeout, cancelTimeout: clearStreamTimeout, reportError: reportStreamError } = useStreamHealth()
@@ -72,11 +78,11 @@ function App() {
   const [showStationPicker, setShowStationPicker] = useState(false)
   const [emailCopied, setEmailCopied] = useState(false)
   const [streamError, setStreamError] = useState<string | null>(null)
-  const [showWelcome, setShowWelcome] = useState(true)
-  const [showSplash, setShowSplash] = useState(true)
+  const [showWelcome, setShowWelcome] = useState(isAnimationMode ? showWelcomeOverride : true)
+  const [showSplash, setShowSplash] = useState(!isAnimationMode)
   const [splashPhase, setSplashPhase] = useState<'visible' | 'fading' | 'hidden'>('visible')
-  const [headerVisible, setHeaderVisible] = useState(false)
-  const [contentVisible, setContentVisible] = useState(false)
+  const [headerVisible, setHeaderVisible] = useState(isAnimationMode)
+  const [contentVisible, setContentVisible] = useState(isAnimationMode)
   const audioRef = useRef<HTMLAudioElement | null>(null)
   const playTimeoutRef = useRef<number | null>(null)
 
@@ -151,6 +157,17 @@ function App() {
       setNtsBgColor(channel.bgColor)
     }
   }, [sortedChannels, currentImage, selectedChannelId, selectedIndex, ntsBgColor])
+
+  // Notify parent when ready (for Remotion animations)
+  useEffect(() => {
+    if (!isLoading && channels.length > 0 && onReady) {
+      // Small delay to ensure images start loading
+      const timer = setTimeout(() => {
+        onReady()
+      }, 500)
+      return () => clearTimeout(timer)
+    }
+  }, [isLoading, channels, onReady])
 
   // Play channel with debounced audio loading
   const playChannel = useCallback((index: number) => {

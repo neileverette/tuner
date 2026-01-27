@@ -1,5 +1,6 @@
 import { useState } from 'react'
 import { generateFallbackThumbnail } from '../utils/thumbnailFallback'
+import GeneratedArtwork from './GeneratedArtwork'
 import type { ArtworkConfig } from '../types/channel'
 
 interface HeroArtworkProps {
@@ -111,21 +112,13 @@ function HeroArtwork({
           className={`hero-image hero-image-prev ${isTransitioning ? `transitioning ${transitionDirection}` : ''}`}
         />
       )}
-      {fallback?.needsFallback ? (
-        <div
-          className={`hero-fallback hero-image-current ${isTransitioning ? `transitioning ${transitionDirection}` : ''} ${fallback.style ? `hero-fallback-${fallback.style}` : ''} ${fallback.displayMode === 'full-name' ? 'hero-fallback-full-name' : ''}`}
-          style={{
-            backgroundColor: fallback.backgroundColor,
-            '--fallback-color-1': fallback.backgroundColor,
-            '--fallback-color-2': fallback.backgroundColor + 'dd', // Slightly transparent variant
-          } as React.CSSProperties}
-        >
-          {fallback.displayMode === 'full-name' ? (
-            <span className="hero-fallback-name">{fallback.fullName}</span>
-          ) : (
-            <span className="hero-fallback-initials">{fallback.initials}</span>
-          )}
-        </div>
+      {fallback?.needsFallback && stationId && stationName ? (
+        <GeneratedArtwork
+          stationId={stationId}
+          stationName={stationName}
+          size="hero"
+          className={`hero-image hero-image-current ${isTransitioning ? `transitioning ${transitionDirection}` : ''}`}
+        />
       ) : currentImage ? (
         <img
           src={currentImage}
