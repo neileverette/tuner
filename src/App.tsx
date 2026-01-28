@@ -6,7 +6,7 @@ import SortDropdown from './components/SortDropdown'
 import HeroArtwork from './components/HeroArtwork'
 import SplashScreen from './components/SplashScreen'
 import ShareButton from './components/ShareButton'
-import { useChannels, useNowPlaying, useFavorites, useGenreFilter, useStreamHealth } from './hooks'
+import { useChannels, useNowPlaying, useFavorites, useGenreFilter, useStreamHealth, useStationHealthScanner } from './hooks'
 import type { SortOption } from './types'
 import { sortChannels, filterChannelsByGenre } from './utils'
 import GenreFilter from './components/GenreFilter'
@@ -23,6 +23,14 @@ interface AppProps {
 
 function App({ isAnimationMode = false, showWelcomeOverride = false, onReady }: AppProps) {
   const { channels, isLoading, error, refetch, getStreamUrl } = useChannels()
+
+  // Scan stations for dead streams - filters out unhealthy ones automatically
+  const { healthyChannels } = useStationHealthScanner(
+    channels,
+    getStreamUrl,
+    { enabled: !isLoading && channels.length > 0 }
+  )
+
   const { isFavorite, toggleFavorite } = useFavorites()
   const { startTimeout: startStreamTimeout, cancelTimeout: clearStreamTimeout, reportError: reportStreamError } = useStreamHealth()
   const {
@@ -42,10 +50,10 @@ function App({ isAnimationMode = false, showWelcomeOverride = false, onReady }: 
   })
   const [isPlaying, setIsPlaying] = useState(false)
 
-  // Filter channels by genre, then sort
+  // Filter channels by genre, then sort (using healthyChannels from scanner)
   const filteredChannels = useMemo(() => {
-    return filterChannelsByGenre(channels, enabledGenres)
-  }, [channels, enabledGenres])
+    return filterChannelsByGenre(healthyChannels, enabledGenres)
+  }, [healthyChannels, enabledGenres])
 
   const sortedChannels = useMemo(() => {
     return sortChannels(filteredChannels, sortOption)
