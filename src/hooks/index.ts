@@ -12,3 +12,5 @@ export { useGenreFilter } from './useGenreFilter';
 export type { UseGenreFilterResult } from './useGenreFilter';
 
 export { useStreamHealth } from './useStreamHealth';
+
+export { useStationHealthScanner } from './useStationHealthScanner';
