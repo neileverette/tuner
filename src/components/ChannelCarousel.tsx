@@ -77,15 +77,16 @@ function ChannelCarousel({
       onMouseLeave={handleMouseLeave}
     >
       {channels.map((channel, index) => (
-        <ChannelCard
-          key={channel.id}
-          channel={channel}
-          index={index}
-          isSelected={index === selectedIndex}
-          onSelect={onSelectChannel}
-          isFavorite={isFavorite?.(channel.id)}
-          onToggleFavorite={onToggleFavorite}
-        />
+        <div key={channel.id} className="carousel-item-container">
+          <ChannelCard
+            channel={channel}
+            index={index}
+            isSelected={index === selectedIndex}
+            onSelect={onSelectChannel}
+            isFavorite={isFavorite?.(channel.id)}
+            onToggleFavorite={onToggleFavorite}
+          />
+        </div>
       ))}
     </div>
   )

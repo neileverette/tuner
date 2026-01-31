@@ -88,6 +88,7 @@ function App({ isAnimationMode = false, showWelcomeOverride = false, onReady }: 
   const [showStationPicker, setShowStationPicker] = useState(false)
   const [emailCopied, setEmailCopied] = useState(false)
   const [streamError, setStreamError] = useState<string | null>(null)
+  const [errorChannelId, setErrorChannelId] = useState<string | null>(null)
   const [showWelcome, setShowWelcome] = useState(isAnimationMode ? showWelcomeOverride : true)
   const [showSplash, setShowSplash] = useState(!isAnimationMode)
   const [splashPhase, setSplashPhase] = useState<'visible' | 'fading' | 'hidden'>('visible')
@@ -122,6 +123,7 @@ function App({ isAnimationMode = false, showWelcomeOverride = false, onReady }: 
       clearTimeout(hideTimer)
     }
   }, [showSplash])
+
 
   // Update favicon based on play/pause state
   useEffect(() => {
@@ -242,6 +244,7 @@ function App({ isAnimationMode = false, showWelcomeOverride = false, onReady }: 
 
     // Clear any previous stream error
     setStreamError(null)
+    setErrorChannelId(null)
 
     // Debounce the actual audio loading - wait for user to stop pressing keys
     playTimeoutRef.current = window.setTimeout(() => {
@@ -273,6 +276,7 @@ function App({ isAnimationMode = false, showWelcomeOverride = false, onReady }: 
               reportStreamError('PlaybackError', err.message || 'Unknown playback error')
               setIsPlaying(false)
               setStreamError('Failed to start playback')
+              setErrorChannelId(channel.id)
             })
         }
       }
@@ -371,6 +375,7 @@ function App({ isAnimationMode = false, showWelcomeOverride = false, onReady }: 
           clearStreamTimeout()
           reportStreamError('ConnectionError', 'Stream connection failed')
           setStreamError('Stream connection failed')
+          setErrorChannelId(selectedChannelId)
           setIsPlaying(false)
         }}
         onWaiting={() => console.warn('Audio buffering - waiting for data')}
@@ -439,18 +444,6 @@ function App({ isAnimationMode = false, showWelcomeOverride = false, onReady }: 
         </div>
       )}
 
-      {/* Error Banner - Stream error */}
-      {streamError && (
-        <div className={`error-banner stream-error ${contentVisible ? 'visible' : ''}`}>
-          <span>{streamError}</span>
-          <button onClick={() => {
-            setStreamError(null)
-            if (selectedChannel) playChannel(selectedIndex)
-          }}>Retry</button>
-          <button onClick={() => setStreamError(null)}>Dismiss</button>
-        </div>
-      )}
-
       {/* Station Controls Group */}
       <div className="station-controls-group">
         {/* Station Count - left aligned */}
@@ -494,6 +487,18 @@ function App({ isAnimationMode = false, showWelcomeOverride = false, onReady }: 
         />
       </div>
 
+      {/* Stream Error Message - centered on page */}
+      {errorChannelId && (
+        <div
+          className="station-error-message"
+          onClick={() => {
+            setStreamError(null)
+            setErrorChannelId(null)
+          }}
+        >
+          This station isn't available right now, but there's plenty of other great music to choose from.
+        </div>
+      )}
 
       {/* Station Picker Dropdown - lazy loaded */}
       {showStationPicker && (

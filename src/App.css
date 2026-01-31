@@ -364,6 +364,72 @@
   display: none;
 }
 
+/* Container for carousel item + error message */
+.carousel-item-container {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  flex-shrink: 0;
+}
+
+/* Station unavailable error message - centered on page */
+.station-error-message {
+  position: fixed;
+  top: 63%;
+  left: 50%;
+  transform: translate(-50%, -50%) scale(0.9);
+  background: rgba(60, 60, 60, 0.7);
+  backdrop-filter: blur(20px);
+  -webkit-backdrop-filter: blur(20px);
+  border-radius: 8px;
+  padding: 14px 24px;
+  text-align: center;
+  cursor: pointer;
+  animation: errorModalIn 0.35s ease forwards;
+  opacity: 0;
+  white-space: nowrap;
+  z-index: 1000;
+  font-size: 14px;
+  color: rgba(255, 255, 255, 0.9);
+}
+
+.station-error-message p {
+  font-size: 12px;
+  line-height: 1.4;
+  color: rgba(255, 255, 255, 0.9);
+  margin: 0;
+}
+
+.station-error-message p:first-child {
+  margin-bottom: 6px;
+}
+
+.station-error-message p strong {
+  font-weight: 600;
+}
+
+@keyframes fadeInDown {
+  from {
+    opacity: 0;
+    transform: translateY(-8px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+@keyframes errorModalIn {
+  from {
+    opacity: 0;
+    transform: translate(-50%, -50%) scale(0.95);
+  }
+  to {
+    opacity: 1;
+    transform: translate(-50%, -50%) scale(1);
+  }
+}
+
 .carousel-item {
   width: 100px;
   border: none;
