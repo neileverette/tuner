@@ -89,8 +89,9 @@ function App({ isAnimationMode = false, showWelcomeOverride = false, onReady }: 
   const [showWelcome, setShowWelcome] = useState(isAnimationMode ? showWelcomeOverride : true)
   const [showSplash, setShowSplash] = useState(!isAnimationMode)
   const [splashPhase, setSplashPhase] = useState<'visible' | 'fading' | 'hidden'>('visible')
-  const [headerVisible, setHeaderVisible] = useState(isAnimationMode)
-  const [contentVisible, setContentVisible] = useState(isAnimationMode)
+  const [headerVisible, setHeaderVisible] = useState(false)
+  const [contentVisible, setContentVisible] = useState(false)
+  const [animationReady, setAnimationReady] = useState(false)
   const audioRef = useRef<HTMLAudioElement | null>(null)
   const playTimeoutRef = useRef<number | null>(null)
 
@@ -171,11 +172,17 @@ function App({ isAnimationMode = false, showWelcomeOverride = false, onReady }: 
     if (!isLoading && channels.length > 0 && onReady) {
       // Small delay to ensure images start loading
       const timer = setTimeout(() => {
+        // In animation mode, show content now that data is loaded
+        if (isAnimationMode) {
+          setAnimationReady(true)
+          setHeaderVisible(true)
+          setContentVisible(true)
+        }
         onReady()
       }, 500)
       return () => clearTimeout(timer)
     }
-  }, [isLoading, channels, onReady])
+  }, [isLoading, channels, onReady, isAnimationMode])
 
   // Play channel with debounced audio loading
   const playChannel = useCallback((index: number) => {
@@ -336,8 +343,13 @@ function App({ isAnimationMode = false, showWelcomeOverride = false, onReady }: 
     }
   }, [nowPlaying])
 
+  // In animation mode, hide everything until data is loaded
+  const appStyle = isAnimationMode && !animationReady
+    ? { opacity: 0, visibility: 'hidden' as const }
+    : {}
+
   return (
-    <div className="tuner">
+    <div className="tuner" style={appStyle}>
       {/* Audio element - preload="auto" enables browser buffering for seamless playback */}
       <audio
         ref={audioRef}

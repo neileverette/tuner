@@ -1,6 +1,6 @@
 import { AbsoluteFill, interpolate, useCurrentFrame, useVideoConfig, Easing, Audio, staticFile, delayRender, continueRender } from 'remotion';
 import { useEffect, useState, useCallback } from 'react';
-import App from '../src/App';
+import App from '../../src/App';
 
 export const Animation3: React.FC = () => {
     const frame = useCurrentFrame();
@@ -146,18 +146,6 @@ export const Animation3: React.FC = () => {
                 mixBlendMode: 'overlay',
             }} />
 
-            {/* 3. Optional: A 'Focus Ring' in the center */}
-            <div style={{
-                position: 'absolute',
-                top: '50%',
-                left: '50%',
-                width: 800,
-                height: 800,
-                border: '2px solid rgba(255,255,255,0.2)',
-                borderRadius: '50%',
-                transform: 'translate(-50%, -50%)',
-                pointerEvents: 'none',
-            }} />
 
             {/* 4. Audio Track */}
             <Audio src={staticFile('audio.mp3')} />

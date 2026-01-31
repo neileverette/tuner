@@ -1,10 +1,16 @@
-import { AbsoluteFill, interpolate, useCurrentFrame, useVideoConfig, Easing, Audio, staticFile } from 'remotion';
-import { useEffect } from 'react';
-import App from '../src/App';
+import { AbsoluteFill, interpolate, useCurrentFrame, useVideoConfig, Easing, Audio, staticFile, delayRender, continueRender } from 'remotion';
+import { useState, useCallback } from 'react';
+import App from '../../src/App';
 
 export const Animation2: React.FC = () => {
     const frame = useCurrentFrame();
     const { width, durationInFrames, fps } = useVideoConfig();
+
+    // Pause rendering until app data is ready
+    const [handle] = useState(() => delayRender('Animation2DataLoad'));
+    const onReady = useCallback(() => {
+        continueRender(handle);
+    }, [handle]);
 
     // Trigger keyboard navigation: "Click faster as it sweeps"
     // Keyboard navigation (album changes) removed per user request for Animation 2
@@ -121,15 +127,9 @@ export const Animation2: React.FC = () => {
                     transform: `scale(${currentScale})`,
                     transformOrigin: 'bottom left',
                 }}>
-                    <App />
+                    <App isAnimationMode={true} onReady={onReady} />
                 </div>
             </div>
-
-            {/* 2. The Spotlight Mask (Overlay) */}
-            <AbsoluteFill style={{
-                background: `radial-gradient(circle at center, transparent 30%, rgba(0,0,0,0.4) 100%)`,
-                pointerEvents: 'none',
-            }} />
 
             {/* 2b. "Slight Lighting Effect" - Moving Shine */}
             <AbsoluteFill style={{
@@ -139,21 +139,7 @@ export const Animation2: React.FC = () => {
                 mixBlendMode: 'overlay',
             }} />
 
-            {/* 3. Optional: A 'Focus Ring' in the center */}
-            <div style={{
-                position: 'absolute',
-                top: '50%',
-                left: '50%',
-                width: 800,
-                height: 800,
-                border: '2px solid rgba(255,255,255,0.2)',
-                borderRadius: '50%',
-                transform: 'translate(-50%, -50%)',
-                pointerEvents: 'none',
-            }} />
-
             {/* 4. Audio Track */}
-            <Audio src={staticFile('audio.mp3')} />            {/* 4. Audio Track */}
             <Audio src={staticFile('audio.mp3')} />
         </AbsoluteFill>
     );
