@@ -7,3 +7,12 @@ README.md
 *.png
 *.log
 .DS_Store
+
+# Remotion assets and outputs (not needed in production container)
+remotion/
+public/*.mp3
+artifacts/
+*.mp4
+*.mov
+*.avi
+*.webm

@@ -33,21 +33,21 @@ dist-ssr
 *.sln
 *.sw?
 
-# Remotion media and outputs (keep out of git to avoid bloat)
-remotion/assets/
+# Remotion rendered outputs only (source assets ARE committed)
 remotion/output/
-artifacts/
+artifacts/*.mp4
+artifacts/*.mov
 
-# Large media files
+# Rendered video files (don't commit outputs)
 *.mp4
 *.mov
 *.avi
 *.mkv
 *.webm
-*.mp3
-*.wav
-*.flac
-*.aac
+
+# Exception: Allow source audio files for animations
+!public/*.mp3
+!remotion/**/*.mp3
 
 # Remotion build cache
 .remotion/
