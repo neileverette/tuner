@@ -87,7 +87,6 @@ function App({ isAnimationMode = false, showWelcomeOverride = false, onReady }: 
   const [transitionDirection, setTransitionDirection] = useState<'left' | 'right'>('right')
   const [showStationPicker, setShowStationPicker] = useState(false)
   const [emailCopied, setEmailCopied] = useState(false)
-  const [streamError, setStreamError] = useState<string | null>(null)
   const [errorChannelId, setErrorChannelId] = useState<string | null>(null)
   const [showWelcome, setShowWelcome] = useState(isAnimationMode ? showWelcomeOverride : true)
   const [showSplash, setShowSplash] = useState(!isAnimationMode)
@@ -243,7 +242,6 @@ function App({ isAnimationMode = false, showWelcomeOverride = false, onReady }: 
     }
 
     // Clear any previous stream error
-    setStreamError(null)
     setErrorChannelId(null)
 
     // Debounce the actual audio loading - wait for user to stop pressing keys
@@ -275,7 +273,6 @@ function App({ isAnimationMode = false, showWelcomeOverride = false, onReady }: 
               clearStreamTimeout()
               reportStreamError('PlaybackError', err.message || 'Unknown playback error')
               setIsPlaying(false)
-              setStreamError('Failed to start playback')
               setErrorChannelId(channel.id)
             })
         }
@@ -374,7 +371,6 @@ function App({ isAnimationMode = false, showWelcomeOverride = false, onReady }: 
         onError={() => {
           clearStreamTimeout()
           reportStreamError('ConnectionError', 'Stream connection failed')
-          setStreamError('Stream connection failed')
           setErrorChannelId(selectedChannelId)
           setIsPlaying(false)
         }}
@@ -491,10 +487,7 @@ function App({ isAnimationMode = false, showWelcomeOverride = false, onReady }: 
       {errorChannelId && (
         <div
           className="station-error-message"
-          onClick={() => {
-            setStreamError(null)
-            setErrorChannelId(null)
-          }}
+          onClick={() => setErrorChannelId(null)}
         >
           This station isn't available right now, but there's plenty of other great music to choose from.
         </div>
