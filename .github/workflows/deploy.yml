@@ -69,14 +69,21 @@ jobs:
             aws ecr get-login-password --region ${{ env.AWS_REGION }} | \
               docker login --username AWS --password-stdin ${{ env.ECR_REGISTRY }}
             
-            # Pull latest image
+            # Remove old cached image to force fresh pull
+            docker rmi ${{ env.ECR_REGISTRY }}/${{ env.ECR_REPOSITORY }}:${{ env.DOCKER_TAG }} || true
+
+            # Pull latest image (fresh, not cached)
             docker pull ${{ env.ECR_REGISTRY }}/${{ env.ECR_REPOSITORY }}:${{ env.DOCKER_TAG }}
             
-            # Stop and remove existing container
+            # Stop and remove existing container by name
             docker stop ${{ env.CONTAINER_NAME }} || true
             docker rm ${{ env.CONTAINER_NAME }} || true
-            
-            # Kill any process using port 3001
+
+            # Also stop ANY container using our port (catches old containers with different names)
+            docker ps --filter "publish=${{ env.CONTAINER_PORT }}" -q | xargs -r docker stop || true
+            docker ps -a --filter "publish=${{ env.CONTAINER_PORT }}" -q | xargs -r docker rm || true
+
+            # Kill any remaining process using the port
             sudo lsof -ti:${{ env.CONTAINER_PORT }} | xargs -r sudo kill -9 || true
             
             # Wait for port to be released
@@ -103,3 +110,4 @@ jobs:
             echo "✅ Successfully deployed ${{ env.ENVIRONMENT }} to ${{ env.DEPLOY_URL }}"
 
 # Made with Bob
+# Redeploy trigger: 2026-01-27-v2

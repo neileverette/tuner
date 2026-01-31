@@ -1,35 +1,19 @@
-import { AbsoluteFill, interpolate, useCurrentFrame, useVideoConfig, Easing } from 'remotion';
-import { useEffect } from 'react';
-import App from '../src/App';
+import { AbsoluteFill, interpolate, useCurrentFrame, useVideoConfig, Easing, Audio, staticFile, delayRender, continueRender } from 'remotion';
+import { useState, useCallback } from 'react';
+import App from '../../src/App';
 
-export const MainTourMultiStage: React.FC = () => {
+export const Animation1: React.FC = () => {
     const frame = useCurrentFrame();
     const { width, durationInFrames, fps } = useVideoConfig();
 
-    // Trigger keyboard navigation: "Click faster as it sweeps"
-    useEffect(() => {
-        // Sweep starts at 1.75s (approx frame 52).
-        // Intervals decrease to simulate "faster" clicking.
-        const triggerFrames = [
-            15,             // RESET FOCUS: Switch to Album 2 at start
-            70,             // Start Drifting
-            95,             // +25
-            115,            // +20
-            130,            // +15
-            142,            // +12
-            152,            // +10
-            160,            // +8
-            167, 174, 180   // Rapid fire at end
-        ];
+    // Pause rendering until app data is ready
+    const [handle] = useState(() => delayRender('Animation1DataLoad'));
+    const onReady = useCallback(() => {
+        continueRender(handle);
+    }, [handle]);
 
-        if (triggerFrames.includes(frame)) {
-            window.dispatchEvent(new KeyboardEvent('keydown', {
-                key: 'ArrowRight',
-                code: 'ArrowRight',
-                bubbles: true
-            }));
-        }
-    }, [frame]);
+    // Trigger keyboard navigation: "Click faster as it sweeps"
+    // Keyboard navigation (album changes) removed per user request for Animation 1
 
     // Standard Desktop Dimensions
     const baseWidth = 1920;
@@ -40,56 +24,62 @@ export const MainTourMultiStage: React.FC = () => {
 
     // Base scale to fill height (1.77)
     const fillScale = targetHeight / baseHeight;
-
-    // Zoom Strategy:
-    // 0s - 0.5s: Hold
-    // 0.5s - 1.75s: Zoom to 1.5x (Fast initial zoom per user request "scales to 1.5")
-    // 1.75s - End:  Slight drift or hold? Assuming continuous smooth zoom or hold. 
-    // Let's keep a gentle zoom continuing to keeping it alive.
+    // Zoom defined below
     const startScale = fillScale;
-    const midScale = fillScale * 1.5;
     const endScale = fillScale * 1.6; // Slight continued zoom
 
+    // --- TIMING CONFIGURATION ---
+    const tIntroEnd = 30;    // 1.0s: Drift ends, Sweep starts
+    const tSweepEnd = 165;   // 5.5s: Main Sweep finishes AND Return starts immediately
+    const tEnd = 240;        // 8.0s: End
+
+    // 1. SCALE: Zoom In (0-5.5s) -> Zoom Out (5.5s-8s)
     const currentScale = interpolate(
         frame,
-        [0, Math.round(fps * 0.5), Math.round(fps * 1.75), durationInFrames],
-        [startScale, startScale, midScale, endScale],
-        { easing: Easing.bezier(0.25, 1, 0.5, 1) } // "Ease effects"
-    );
-
-    // Pan (Sweep) Strategy:
-    // 0s - 0.5s: Hold
-    // 0.5s - 1.75s: "Move to the right slower" (Slow Pan)
-    // 1.75s - End: "Sweep... to final position" (Fast Pan)
-
-    // Calculate max sweep based on MAX scale to ensure no black bars
-    const maxScaledWidth = baseWidth * endScale;
-    const totalSweepDistance = maxScaledWidth - width;
-
-    const slowPanDist = totalSweepDistance * 0.15; // 15% progress in first phase
-
-    const translateX = interpolate(
-        frame,
-        [0, Math.round(fps * 0.5), Math.round(fps * 1.75), durationInFrames],
-        [0, 0, -slowPanDist, -totalSweepDistance],
+        [0, tSweepEnd, tEnd],
+        [startScale, endScale, startScale],
         {
             extrapolateLeft: 'clamp',
             extrapolateRight: 'clamp',
-            // Custom easing for the "Sweep" feel
-            easing: Easing.bezier(0.2, 0, 0.2, 1)
+            easing: Easing.inOut(Easing.sin)
         }
     );
 
-    // Lighting Effect: A subtle "shine" moving across
-    const shineOpacity = interpolate(
+    // 2. PAN X (Horizontal Sweep): Hold (0-1s) -> Sweep Out (1-5.5s) -> Return (5.5-8s)
+    // Calculate max sweep based on MAX scale (at tSweepEnd)
+    const maxScaledWidth = baseWidth * endScale;
+    const totalSweepDistance = maxScaledWidth - width;
+
+    const translateX = interpolate(
         frame,
-        [0, durationInFrames / 2, durationInFrames],
-        [0, 0.15, 0], // Subtle flash in the middle
-        { easing: Easing.linear }
+        [0, tIntroEnd, tSweepEnd, tEnd],
+        [0, 0, -totalSweepDistance, 0],
+        {
+            extrapolateLeft: 'clamp',
+            extrapolateRight: 'clamp',
+            easing: Easing.inOut(Easing.sin),
+        }
     );
 
-    // No Vertical Pan (Strictly centered or top-aligned as preferred)
-    const translateY = 0;
+    // 3. PAN Y (Vertical): Drift Down (0-1s) -> Hold (1-5.5s) -> Return Up (5.5-8s)
+    const translateY = interpolate(
+        frame,
+        [0, tIntroEnd, tSweepEnd, tEnd],
+        [0, 40, 40, 0],
+        {
+            extrapolateLeft: 'clamp',
+            extrapolateRight: 'clamp',
+            easing: Easing.inOut(Easing.sin),
+        }
+    );
+
+    // Lighting Effect: Peak at max sweep
+    const shineOpacity = interpolate(
+        frame,
+        [0, tSweepEnd, tEnd],
+        [0, 0.15, 0],
+        { easing: Easing.linear }
+    );
 
     return (
         <AbsoluteFill style={{ backgroundColor: '#161616' }}>
@@ -137,7 +127,8 @@ export const MainTourMultiStage: React.FC = () => {
                     transform: `scale(${currentScale})`,
                     transformOrigin: 'bottom left',
                 }}>
-                    <App />
+                    {/* Animation Mode with Welcome Modal */}
+                    <App isAnimationMode={true} showWelcomeOverride={true} onReady={onReady} />
                 </div>
             </div>
 
@@ -155,18 +146,8 @@ export const MainTourMultiStage: React.FC = () => {
                 mixBlendMode: 'overlay',
             }} />
 
-            {/* 3. Optional: A 'Focus Ring' in the center */}
-            <div style={{
-                position: 'absolute',
-                top: '50%',
-                left: '50%',
-                width: 800,
-                height: 800,
-                border: '2px solid rgba(255,255,255,0.2)',
-                borderRadius: '50%',
-                transform: 'translate(-50%, -50%)',
-                pointerEvents: 'none',
-            }} />
+            {/* Audio Track */}
+            <Audio src={staticFile('3c0dbf45-c9da-416f-87f4-3f056624e292.mp3')} />
         </AbsoluteFill>
     );
 };

@@ -1,19 +1,49 @@
 import { AbsoluteFill, interpolate, useCurrentFrame, useVideoConfig, Easing, Audio, staticFile, delayRender, continueRender } from 'remotion';
 import { useState, useCallback } from 'react';
-import App from '../src/App';
+import { z } from 'zod/v3';
+import App from '../../src/App';
 
-export const Animation4: React.FC = () => {
+export const Animation4Schema = z.object({
+    // Start state
+    startX: z.number().min(-3000).max(3000),
+    startY: z.number().min(-3000).max(3000),
+    startZoom: z.number().min(0.5).max(5).step(0.01),
+    // Peak/Middle state (center, scaled up)
+    peakX: z.number().min(-3000).max(3000),
+    peakY: z.number().min(-3000).max(3000),
+    peakZoom: z.number().min(0.5).max(5).step(0.01),
+    // End state (far right)
+    endX: z.number().min(-3000).max(3000),
+    endY: z.number().min(-3000).max(3000),
+    endZoom: z.number().min(0.5).max(5).step(0.01),
+    // Timing
+    peakFrame: z.number().min(10).max(2000),
+    endFrame: z.number().min(10).max(2000),
+});
+
+export type Animation4Props = z.infer<typeof Animation4Schema>;
+
+export const Animation4: React.FC<Animation4Props> = ({
+    startX = 0,
+    startY = 0,
+    startZoom = 1.7,
+    peakX = -200,
+    peakY = 0,
+    peakZoom = 2.2,
+    endX = -500,
+    endY = -30,
+    endZoom = 1.9,
+    peakFrame = 60,
+    endFrame = 150,
+}) => {
     const frame = useCurrentFrame();
-    const { width, durationInFrames, fps } = useVideoConfig();
+    const { durationInFrames } = useVideoConfig();
 
     // Pause rendering until app data is ready
     const [handle] = useState(() => delayRender('Animation4DataLoad'));
     const onReady = useCallback(() => {
         continueRender(handle);
     }, [handle]);
-
-    // Animation 4: Reverse Sweep - sweeps RIGHT to LEFT (opposite of Animation3)
-    // Uses slightly different timing and easing for variety
 
     // Standard Desktop Dimensions
     const baseWidth = 1920;
@@ -22,37 +52,36 @@ export const Animation4: React.FC = () => {
     // Target Dimensions (Mobile Portrait)
     const targetHeight = 1920;
 
-    // Base scale to fill height (1.77)
+    // Base scale to fill height
     const fillScale = targetHeight / baseHeight;
-    const startScale = fillScale;
-    const endScale = fillScale * 1.7; // Slightly more zoom than Animation3
 
     // --- TIMING CONFIGURATION ---
-    const tIntroEnd = 40;    // 1.33s: Drift ends, Sweep starts (slightly longer hold)
-    const tSweepEnd = 170;   // 5.67s: Main Sweep finishes AND Return starts
-    const tEnd = 240;        // 8.0s: End
+    // Ensure timing values are valid and in order
+    const tTotal = durationInFrames;
+    const tPeak = Math.max(10, Math.min(peakFrame, tTotal - 20));
+    const tEnd = Math.max(tPeak + 10, Math.min(endFrame, tTotal - 10));
 
-    // 1. SCALE: Zoom In (0-5.67s) -> Zoom Out (5.67s-8s)
+    // Calculate scale values
+    const scaleStart = fillScale * startZoom;
+    const scalePeak = fillScale * peakZoom;
+    const scaleEnd = fillScale * endZoom;
+
+    // 4-state interpolation: start -> peak -> end -> back to start
     const currentScale = interpolate(
         frame,
-        [0, tSweepEnd, tEnd],
-        [startScale, endScale, startScale],
+        [0, tPeak, tEnd, tTotal],
+        [scaleStart, scalePeak, scaleEnd, scaleStart],
         {
             extrapolateLeft: 'clamp',
             extrapolateRight: 'clamp',
-            easing: Easing.bezier(0.42, 0, 0.58, 1) // Smoother easing
+            easing: Easing.bezier(0.42, 0, 0.58, 1)
         }
     );
-
-    // 2. PAN X (Horizontal Sweep): REVERSE DIRECTION
-    // Start from RIGHT and sweep LEFT, then return
-    const maxScaledWidth = baseWidth * endScale;
-    const totalSweepDistance = maxScaledWidth - width;
 
     const translateX = interpolate(
         frame,
-        [0, tIntroEnd, tSweepEnd, tEnd],
-        [-totalSweepDistance, -totalSweepDistance, 0, -totalSweepDistance * 0.2], // Reverse sweep direction
+        [0, tPeak, tEnd, tTotal],
+        [startX, peakX, endX, startX],
         {
             extrapolateLeft: 'clamp',
             extrapolateRight: 'clamp',
@@ -60,11 +89,10 @@ export const Animation4: React.FC = () => {
         }
     );
 
-    // 3. PAN Y (Vertical): Different drift pattern - drift UP instead of down
     const translateY = interpolate(
         frame,
-        [0, tIntroEnd, tSweepEnd, tEnd],
-        [0, -30, -30, 0], // Negative for upward drift
+        [0, tPeak, tEnd, tTotal],
+        [startY, peakY, endY, startY],
         {
             extrapolateLeft: 'clamp',
             extrapolateRight: 'clamp',
@@ -72,20 +100,12 @@ export const Animation4: React.FC = () => {
         }
     );
 
-    // Lighting Effect: Different timing - peak earlier
+    // Lighting Effect
     const shineOpacity = interpolate(
         frame,
-        [0, tIntroEnd, tSweepEnd * 0.6, tSweepEnd, tEnd],
-        [0, 0.05, 0.18, 0.12, 0],
+        [0, tPeak, tEnd, tTotal],
+        [0, 0.18, 0.12, 0],
         { easing: Easing.bezier(0.33, 1, 0.68, 1) }
-    );
-
-    // Pulsing spotlight effect
-    const spotlightPulse = interpolate(
-        frame,
-        [0, tIntroEnd, tSweepEnd, tEnd],
-        [0.3, 0.35, 0.42, 0.3],
-        { easing: Easing.inOut(Easing.ease) }
     );
 
     return (
@@ -139,11 +159,6 @@ export const Animation4: React.FC = () => {
                 </div>
             </div>
 
-            {/* 2. The Spotlight Mask (Overlay) - with pulse */}
-            <AbsoluteFill style={{
-                background: `radial-gradient(circle at center, transparent ${25 + spotlightPulse * 15}%, rgba(0,0,0,${0.35 + spotlightPulse * 0.1}) 100%)`,
-                pointerEvents: 'none',
-            }} />
 
             {/* 2b. "Lighting Effect" - Moving Shine with different angle */}
             <AbsoluteFill style={{
@@ -153,33 +168,6 @@ export const Animation4: React.FC = () => {
                 mixBlendMode: 'overlay',
             }} />
 
-            {/* 3. Animated Focus Ring - pulsing */}
-            <div style={{
-                position: 'absolute',
-                top: '50%',
-                left: '50%',
-                width: 700 + Math.sin(frame / 20) * 50,
-                height: 700 + Math.sin(frame / 20) * 50,
-                border: '2px solid rgba(255,255,255,0.15)',
-                borderRadius: '50%',
-                transform: 'translate(-50%, -50%)',
-                pointerEvents: 'none',
-                opacity: interpolate(frame, [0, 20, tEnd - 20, tEnd], [0, 0.8, 0.8, 0]),
-            }} />
-
-            {/* 4. Secondary ring for depth */}
-            <div style={{
-                position: 'absolute',
-                top: '50%',
-                left: '50%',
-                width: 900 + Math.sin(frame / 15) * 40,
-                height: 900 + Math.sin(frame / 15) * 40,
-                border: '1px solid rgba(255,255,255,0.08)',
-                borderRadius: '50%',
-                transform: 'translate(-50%, -50%)',
-                pointerEvents: 'none',
-                opacity: interpolate(frame, [0, 25, tEnd - 25, tEnd], [0, 0.5, 0.5, 0]),
-            }} />
 
             {/* 5. Audio Track */}
             <Audio src={staticFile('audio.mp3')} />
