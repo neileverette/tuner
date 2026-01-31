@@ -33,3 +33,22 @@ dist-ssr
 *.sln
 *.sw?
 
+# Remotion media and outputs (keep out of git to avoid bloat)
+remotion/assets/
+remotion/output/
+artifacts/
+
+# Large media files
+*.mp4
+*.mov
+*.avi
+*.mkv
+*.webm
+*.mp3
+*.wav
+*.flac
+*.aac
+
+# Remotion build cache
+.remotion/
+
