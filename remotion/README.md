@@ -20,9 +20,8 @@ remotion/
 Audio files are stored in `public/` (Remotion convention) but gitignored to avoid bloating the repository.
 
 **Current audio files:**
-- `audio.mp3` - Main audio track
-- `3c0dbf45-c9da-416f-87f4-3f056624e292.mp3` - Animation 1 audio
-- `494de089-1081-4453-8f4d-eccc3318e6d7.mp3` - (unused)
+- `audio.mp3` - Main audio track (used by most animations)
+- `animation1-audio.mp3` - UI Animation 1 specific audio
 
 ## Rendered Outputs
 

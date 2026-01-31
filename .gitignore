@@ -52,3 +52,9 @@ artifacts/*.mov
 # Remotion build cache
 .remotion/
 
+# Development logs and tool directories
+dev.log
+*.log
+.Codex/
+.agent/
+

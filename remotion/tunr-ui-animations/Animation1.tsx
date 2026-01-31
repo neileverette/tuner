@@ -147,7 +147,7 @@ export const Animation1: React.FC = () => {
             }} />
 
             {/* Audio Track */}
-            <Audio src={staticFile('3c0dbf45-c9da-416f-87f4-3f056624e292.mp3')} />
+            <Audio src={staticFile('animation1-audio.mp3')} />
         </AbsoluteFill>
     );
 };
