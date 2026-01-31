@@ -9,6 +9,7 @@ import ShareButton from './components/ShareButton'
 import { useChannels, useNowPlaying, useFavorites, useGenreFilter, useStreamHealth } from './hooks'
 import type { SortOption } from './types'
 import { sortChannels, filterChannelsByGenre } from './utils'
+import { isSafeArtworkUrl } from './utils/safeArtwork'
 import GenreFilter from './components/GenreFilter'
 
 // Lazy load modal components - these aren't needed on initial render
@@ -68,7 +69,8 @@ function App({ isAnimationMode = false, showWelcomeOverride = false, onReady }: 
   const { nowPlaying } = useNowPlaying(selectedChannelId, { enabled: isPlaying })
   const [currentTrack, setCurrentTrack] = useState('')
   const [currentImage, setCurrentImage] = useState(() => {
-    return localStorage.getItem('tuner-current-image') || ''
+    const saved = localStorage.getItem('tuner-current-image') || ''
+    return isSafeArtworkUrl(saved) ? saved : ''
   })
   const [prevImage, setPrevImage] = useState('')
   const [ntsBgColor, setNtsBgColor] = useState('')
@@ -147,9 +149,14 @@ function App({ isAnimationMode = false, showWelcomeOverride = false, onReady }: 
 
     // Set initial image if not set
     const channel = sortedChannels[selectedIndex]
-    if (channel && !currentImage) {
-      setCurrentImage(channel.image.large)
-      localStorage.setItem('tuner-current-image', channel.image.large)
+    if (channel && (!currentImage || !isSafeArtworkUrl(currentImage))) {
+      const candidate = channel.image.large
+      if (isSafeArtworkUrl(candidate)) {
+        setCurrentImage(candidate)
+      } else {
+        setCurrentImage('')
+      }
+      localStorage.setItem('tuner-current-image', candidate)
     }
 
     // Set initial NTS background color
@@ -188,14 +195,20 @@ function App({ isAnimationMode = false, showWelcomeOverride = false, onReady }: 
 
     // Trigger image transition
     const newImage = channel.image.large
-    setCurrentImage((prevImage) => {
-      if (newImage !== prevImage) {
-        setPrevImage(prevImage)
-        setIsTransitioning(true)
-        setTimeout(() => setIsTransitioning(false), 600)
-      }
-      return newImage
-    })
+    if (isSafeArtworkUrl(newImage)) {
+      setCurrentImage((prevImage) => {
+        if (newImage !== prevImage) {
+          setPrevImage(prevImage)
+          setIsTransitioning(true)
+          setTimeout(() => setIsTransitioning(false), 600)
+        }
+        return newImage
+      })
+    } else {
+      setCurrentImage('')
+      setPrevImage('')
+      setIsTransitioning(false)
+    }
 
     // Handle NTS background color transitions
     if (channel.source === 'nts' && channel.bgColor) {
@@ -316,7 +329,7 @@ function App({ isAnimationMode = false, showWelcomeOverride = false, onReady }: 
       setCurrentTrack(nowPlaying.track)
     }
     // Update hero image with now-playing cover art when available
-    if (nowPlaying?.coverUrl) {
+    if (nowPlaying?.coverUrl && isSafeArtworkUrl(nowPlaying.coverUrl)) {
       setCurrentImage((prevImage) => {
         if (nowPlaying.coverUrl !== prevImage) {
           setPrevImage(prevImage)
@@ -353,25 +366,27 @@ function App({ isAnimationMode = false, showWelcomeOverride = false, onReady }: 
       {showSplash && (
         <SplashScreen
           phase={splashPhase}
-          backgroundImage={currentImage}
+          backgroundImage=""
         />
       )}
 
       {/* Hero Channel Art with Crossfade */}
-      <HeroArtwork
-        currentImage={currentImage}
-        prevImage={prevImage}
-        isTransitioning={isTransitioning}
-        transitionDirection={transitionDirection}
-        altText={selectedChannel?.title || 'Channel art'}
-        isKexp={selectedChannel?.id.startsWith('kexp:')}
-        isNts={selectedChannel?.source === 'nts'}
-        ntsBgColor={ntsBgColor || selectedChannel?.bgColor}
-        prevNtsBgColor={prevNtsBgColor}
-        stationId={selectedChannel?.id}
-        stationName={selectedChannel?.title}
-        artworkConfig={selectedChannel?.artworkConfig}
-      />
+      {!showSplash && (
+        <HeroArtwork
+          currentImage={currentImage}
+          prevImage={prevImage}
+          isTransitioning={isTransitioning}
+          transitionDirection={transitionDirection}
+          altText={selectedChannel?.title || 'Channel art'}
+          isKexp={selectedChannel?.id.startsWith('kexp:')}
+          isNts={selectedChannel?.source === 'nts'}
+          ntsBgColor={ntsBgColor || selectedChannel?.bgColor}
+          prevNtsBgColor={prevNtsBgColor}
+          stationId={selectedChannel?.id}
+          stationName={selectedChannel?.title}
+          artworkConfig={selectedChannel?.artworkConfig}
+        />
+      )}
 
       {/* Welcome Modal - lazy loaded */}
       {showWelcome && contentVisible && (
